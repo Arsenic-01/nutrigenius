@@ -3,16 +3,16 @@ import Card from "../ui/Card";
 
 const features = [
   {
-    icon: "🤖",
-    title: "LLM-Powered Recipe Generation",
+    icon: "🔍",
+    title: "Content Filtering Engine",
     description:
-      "The system uses Generative AI to create full, personalized, step-by-step recipes on-demand, injecting safety constraints for allergies and health conditions directly into the prompt.",
+      "The User can filter recipes based on their time frame, health goals, dietary preferences, cuisine and allergies.",
   },
   {
-    icon: "📍",
-    title: "Hyper-Local Recommendations",
+    icon: "📅",
+    title: "Meal History Tracking",
     description:
-      "By using the user's location, the system boosts recommendations for traditional and seasonal dishes from their specific region, creating a culturally resonant and delightful experience.",
+      "The User can track their meal history and view their past recipes, helping them make informed choices for their meals.",
   },
 ];
 
@@ -26,10 +26,10 @@ const AdvancedFeatures = () => {
         Cutting-edge integrations transform the application from a simple tool
         into a dynamic and intelligent cooking companion.
       </p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
         {features.map((feature, index) => (
           <Card key={index} className="p-8 text-center">
-            <div className="text-5xl mb-4">{feature.icon}</div>
+            <div className="text-3xl mb-4">{feature.icon}</div>
             <h3 className="text-2xl font-bold mb-2 text-slate-800">
               {feature.title}
             </h3>

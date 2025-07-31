@@ -10,12 +10,12 @@ const journeySteps = [
   {
     title: "Secure Storage",
     description:
-      "The validated profile is sent via secure HTTPS to the User Profile Service. Derived metrics like BMI are calculated and the profile is stored in the MongoDB database.",
+      "The user's data is securely stored in the database, which is used to train the ML models. The data is encrypted at rest, ensuring privacy and security.",
   },
   {
     title: "Recommendation Request",
     description:
-      "The API Gateway authenticates the user via JWT and forwards the request to the ML Inference Service.",
+      "The user fills out a form to request a personalized meal plan, including dietary preferences, health goals, allergies, and other factors.",
   },
   {
     title: "AI Generation",
@@ -25,7 +25,7 @@ const journeySteps = [
   {
     title: "Displaying Results",
     description:
-      'Recipe IDs are "hydrated" with full details (name, image, nutrition). This rich data is sent to the frontend and rendered in an interactive dashboard.',
+      'Recipe IDs are "hydrated" with full details (name, image, ingredients). This rich data is sent to the frontend and rendered in an interactive dashboard. The user can then select and view each recipe individually.',
   },
 ];
 
@@ -53,7 +53,7 @@ const DataJourney = () => {
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-teal-500 text-white font-bold text-lg shadow-md shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
                 {index + 1}
               </div>
-              <div className="ml-4 md:ml-0 md:w-[calc(50%-2.5rem)]">
+              <div className="ml-2 md:ml-0 md:w-[calc(50%-2.5rem)] -mt-1 md:mt-0">
                 <Card className="p-6">
                   <h3 className="text-xl font-bold text-slate-800 mb-2">
                     {step.title}

@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import Header from "./components/layout/Header";
+import { DM_Sans } from "next/font/google";
 import Footer from "./components/layout/Footer";
+import Header from "./components/layout/Header";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "700"] });
 
 export const metadata: Metadata = {
-  title: "NutriGenius AI: Interactive Blueprint",
+  title: "NutriGenius AI",
   description:
-    "An interactive blueprint exploring the architecture, data flows, and AI models of the NutriGenius AI personalized dietary system.",
+    "Discover recipes customized to your dietary needs with NutriGenius AI — your smart companion for finding the perfect meal.",
 };
 
 export default function RootLayout({
@@ -19,9 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="scroll-smooth">
-      <body className={`${inter.className} bg-slate-50 text-slate-700`}>
+      <body className={`${dmSans.className} text-slate-700`}>
         <Header />
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+        <main className="container mx-auto px-5 sm:px-6 lg:px-8 pt-20">
           {children}
         </main>
         <Footer />

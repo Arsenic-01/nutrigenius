@@ -17,7 +17,7 @@ const citations = [
 
 const Citations = () => {
   return (
-    <Section id="citations">
+    <Section id="citations" className="mb-16">
       <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-slate-800 flex items-center justify-center">
         <span className="mr-3 text-2xl">📚</span>Citations
       </h2>
