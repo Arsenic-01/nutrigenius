@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 
 const navItems = [
-  { href: "#architecture", label: "Architecture" },
-  { href: "#data-journey", label: "Data Journey" },
-  { href: "#ai-core", label: "AI Core" },
-  { href: "#algorithms", label: "Algorithms" },
-  { href: "#team", label: "Team" },
-  { href: "#citations", label: "Citations" },
+  { href: "/#architecture", label: "Architecture" },
+  { href: "/#data-journey", label: "Data Journey" },
+  { href: "/#ai-core", label: "AI Core" },
+  { href: "/#algorithms", label: "Algorithms" },
+  { href: "/#team", label: "Team" },
+  { href: "/#citations", label: "Citations" },
+  { href: "/recipes", label: "Recipes" }, // ✅ New page link
 ];
 
 const Header = () => {
@@ -18,23 +20,25 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = navItems.map((item) =>
-        document.getElementById(item.href.substring(1))
-      );
-      const scrollPosition = window.pageYOffset;
+      const sections = navItems
+        .filter((item) => item.href.startsWith("#")) // ✅ only in-page links
+        .map((item) => document.getElementById(item.href.substring(1)));
 
+      const scrollPosition = window.pageYOffset;
       let current = "";
+
       sections.forEach((section) => {
         if (section && section.offsetTop <= scrollPosition + 120) {
           current = `#${section.id}`;
         }
       });
-      // Check if scrolled to the bottom
+
+      // ✅ If scrolled to bottom
       if (
         window.innerHeight + window.scrollY >=
         document.body.offsetHeight - 50
       ) {
-        current = navItems[navItems.length - 1].href;
+        current = "#citations";
       }
 
       setActiveLink(current);
@@ -115,6 +119,7 @@ const Header = () => {
           </div>
         </div>
       </div>
+
       {isOpen && (
         <div id="mobile-menu" className="lg:hidden border-t border-slate-200">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
