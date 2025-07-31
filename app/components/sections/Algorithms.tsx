@@ -3,54 +3,56 @@ import { useState } from "react";
 import Section from "../ui/Section";
 import Card from "../ui/Card";
 
+// NEW ALGORITHMS
 const algorithms = [
   {
-    title: "Content-Based Filtering",
+    title: "Ingredient-Based Retrieval",
     description:
-      "Recommends recipes based on their inherent properties. We use <strong>TF-IDF Vectorization</strong> to convert recipe text (ingredients, cuisine) into numerical vectors and <strong>Cosine Similarity</strong> to find items similar to a user's preferences.",
+      "To instantly find all recipes containing a specific ingredient, we use an <strong>Inverted Index Search</strong>. This is far more efficient than a simple database scan, allowing for near-instantaneous retrieval of an initial candidate pool from thousands of recipes.",
     color: "text-teal-700",
   },
   {
-    title: "Collaborative Filtering",
+    title: "Multi-Criteria Filtering",
     description:
-      "Suggests recipes based on the behavior of similar users. We employ <strong>Matrix Factorization (SVD)</strong> to uncover latent taste profiles from the user-recipe interaction data (ratings, saves).",
+      "This is a deterministic, rule-based step. The system strictly filters the candidate pool by removing recipes containing specified <strong>allergens</strong>, those that don't match the desired <strong>meal type</strong>, and those exceeding the user's preferred <strong>cooking time</strong>.",
     color: "text-sky-700",
   },
   {
-    title: "Nutrient Deficiency Forecasting",
+    title: "Meal Type Classification",
     description:
-      "Predicts nutrient risk levels. A <strong>Random Forest Classifier</strong> is trained on public health data (NHANES) to classify a user's risk as low, medium, or high based on their dietary intake patterns.",
+      "If a recipe isn't explicitly tagged, a <strong>Naive Bayes Classifier</strong> is used. Trained on recipe names and ingredients, it predicts the most likely meal type (e.g., breakfast, lunch, dinner), enabling accurate filtering.",
     color: "text-emerald-700",
   },
   {
-    title: "Cooking Time Prediction",
+    title: "Personalized Ranking (LTR)",
     description:
-      "Estimates prep and cook times from recipe text. We fine-tune a <strong>BERT (Transformer)</strong> model, a powerful NLP technique that understands the context and semantics of cooking instructions.",
+      "To order the final, filtered recipes, we use a <strong>Learning to Rank (LTR)</strong> model like a Gradient Boosted Tree. It learns to predict the best recipe based on a combination of factors, such as user ratings and recipe complexity.",
     color: "text-rose-700",
   },
 ];
 
+// NEW CHALLENGES
 const challenges = [
   {
-    title: 'The "Cold Start" Problem',
+    title: "Ingredient Ambiguity & Synonyms",
     challenge:
-      "How do you recommend recipes to a new user with no interaction history?",
+      'A user might search for "bell pepper," but the dataset lists "capsicum." How do we match ingredients that have different names?',
     solution:
-      "Our hybrid model defaults to the <strong>Content-Based Filtering</strong> engine for new users. Recommendations are based entirely on the explicit preferences, health goals, and allergies they provide during our comprehensive onboarding process.",
+      'We build and maintain a <strong>Food Ontology (Knowledge Graph)</strong>. This is essentially a thesaurus that maps synonyms, regional names (e.g., "coriander" to "dhania"), and variations to a single, standardized ingredient ID. The search query is expanded using this ontology to ensure no relevant recipes are missed.',
   },
   {
-    title: "Data Sparsity",
+    title: 'The "No Results" Problem',
     challenge:
-      "The user-recipe interaction matrix will be mostly empty, as any single user will have interacted with only a tiny fraction of all available recipes.",
+      "What happens if a user's criteria (e.g., a 10-minute dinner with chicken but no onions) are so strict that they yield zero results?",
     solution:
-      "The <strong>Matrix Factorization (SVD)</strong> algorithm is specifically designed to handle sparse data by learning latent features, allowing it to predict ratings for recipes a user has never seen.",
+      "We employ a <strong>Fallback Strategy with Constraint Relaxation</strong>. If no initial results are found, the system intelligently loosens the least critical constraint (e.g., increasing cooking time by 15 minutes) and re-queries. This process repeats until suitable, albeit slightly broader, recommendations are found, preventing a frustrating dead-end for the user.",
   },
   {
-    title: "Nutritional Accuracy & The Mapping Gap",
+    title: "Missing Meal Type Data",
     challenge:
-      'Recipe ingredients are described in inconsistent, colloquial terms (e.g., "a pinch of hing," "besan"). Mapping these to a standardized nutritional database is a major NLP challenge.',
+      'Our dataset doesnt explicitly label every recipe as "breakfast", "lunch", or "dinner". How do we filter by meal type reliably?',
     solution:
-      "We employ a multi-step <strong>data normalization pipeline</strong> that cleans, parses, and standardizes ingredient text. It then uses a prioritized lookup strategy, first checking Indian-specific databases (INDB) before falling back to global ones (USDA), to achieve the most accurate nutritional mapping possible.",
+      "This is solved by our <strong>Meal Type Classifier</strong>. We pre-process the entire dataset and use our trained model (e.g., Naive Bayes) to assign a predicted meal type to every recipe. This pre-calculated tag is then stored, allowing for fast and efficient filtering during a user's request, rather than performing a slow, on-the-fly prediction.",
   },
 ];
 
@@ -96,8 +98,8 @@ const Algorithms = () => {
 
         {activeTab === "algorithms" && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {algorithms.map((algo, index) => (
-              <Card key={index} className="p-6">
+            {algorithms.map((algo) => (
+              <Card key={algo.title} className="p-6">
                 <h3 className={`font-bold text-xl mb-2 ${algo.color}`}>
                   {algo.title}
                 </h3>
@@ -117,8 +119,8 @@ const Algorithms = () => {
 
         {activeTab === "challenges" && (
           <div className="space-y-6">
-            {challenges.map((item, index) => (
-              <Card key={index} className="p-6">
+            {challenges.map((item) => (
+              <Card key={item.title} className="p-6">
                 <h3 className="font-bold text-xl mb-2 text-slate-800">
                   {item.title}
                 </h3>
