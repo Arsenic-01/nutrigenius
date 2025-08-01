@@ -22,7 +22,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className="scroll-smooth">
-        <body className={`${dmSans.className} antialiased text-slate-700`}>
+        <body
+          suppressHydrationWarning
+          className={`${dmSans.className} antialiased text-slate-700`}
+        >
           <Header />
           <main className="container mx-auto px-5 pt-20">{children}</main>
           <Toaster />

@@ -79,33 +79,34 @@ function RecipeForm() {
 
     const { allergicIngredient, ...apiValues } = cleanedValues;
 
+    try {
+      const response = await fetch("http://127.0.0.1:8000/recommend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(apiValues),
+      });
+      const data = await response.json();
+      console.log("Backend Responce: ", data);
 
-    const responce = await fetch("http://127.0.0.1:8000/recommend",{
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(apiValues),
-    });
+      toast("Response", {
+        description: (
+          <pre className="mt-2 w-auto rounded-md bg-slate-950 p-4">
+            <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+          </pre>
+        ),
+        duration: 5000,
+        richColors: true,
+      });
+      console.log("Recipe Form Submission:", cleanedValues);
+    } catch (err) {
+      console.log(
+        "An Error Occured when trying to send data to the Python Backend via FastAPI : ",
+        err
+      );
+      toast.error("Failed to send data to FastAPI.");
+    }
 
-    const data = await responce.json();
-    console.log("Backend Responce: ", data);
-  
     form.reset();
-
-    // Display the JSON object in a toast using the sonner syntax
-    toast(" Response", {
-      description: (
-        <pre className="mt-2 w-auto rounded-md bg-slate-950 p-4">
-          <code className="text-white">
-            {JSON.stringify(data, null, 2)}
-          </code>
-        </pre>
-      ),
-      duration: 5000,
-      richColors: true,
-    });
-
-    // Log to console for development
-    console.log("Recipe Form Submission:", cleanedValues);
   }
 
   return (

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "../ui/Button";
+import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 
 const Hero = () => {
   const router = useRouter();
@@ -14,13 +15,23 @@ const Hero = () => {
         Discover recipes customized to your dietary needs with NutriGenius AI —
         your smart companion for finding the perfect meal.
       </p>
-      <Button
-        className="mt-8"
-        size="lg"
-        onClick={() => router.push("/recipe-generator")}
-      >
-        Get Started
-      </Button>
+      <div className="mt-8">
+        <SignedOut>
+          <SignInButton mode="modal" forceRedirectUrl={"/recipe-generator"}>
+            <Button className="bg-teal-600 hover:bg-teal-700 text-base">
+              Get Started
+            </Button>
+          </SignInButton>
+        </SignedOut>
+        <SignedIn>
+          <Button
+            className="bg-teal-600 hover:bg-teal-700 text-base"
+            onClick={() => router.push("/recipe-generator")}
+          >
+            Go to Recipe Generator
+          </Button>
+        </SignedIn>
+      </div>
     </header>
   );
 };

@@ -3,15 +3,11 @@
 import { useEffect, useState, useMemo, memo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/app/components/ui/Popover";
-import { Button } from "../ui/Button";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { Button } from "../ui/Button";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
 
-// --- Data Definitions ---
+// --- Data Definitions (Cleaned Up) ---
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/#architecture", label: "Architecture" },
@@ -20,79 +16,80 @@ const navItems = [
   { href: "/#algorithms", label: "Algorithms" },
   { href: "/#team", label: "Team" },
   { href: "/#citations", label: "Citations" },
-  { href: "/recipes", label: "Recipes" },
-  { href: "/recipe-generator", label: "Generate Recipe" },
 ];
 
 // --- Main Header Component ---
 const Header = () => {
-  // State for mobile menu visibility
-  const [isOpen, setIsOpen] = useState(false);
-  // State to track the currently visible section on the home page
+  const [isOpen, setIsOpen] = useState(false); // Mobile menu state
   const [activeSection, setActiveSection] = useState("/");
   const pathname = usePathname();
 
-  // Memoize the list of home page sections to prevent recalculation on re-renders
   const homeNavItems = useMemo(
     () => navItems.filter((item) => item.href.startsWith("/#")),
     []
   );
 
-  // Use IntersectionObserver for performant scroll tracking on the home page
+  // Performant scroll tracking using IntersectionObserver
   useEffect(() => {
-    if (pathname !== "/") {
-      setActiveSection(pathname);
-      return;
-    }
+    if (pathname !== "/") return; // Only run on the homepage
+
+    const firstSectionElement = document.getElementById(
+      homeNavItems[0].href.substring(2)
+    );
+    if (!firstSectionElement) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            // Set the active section to the one that just entered the viewport
-            setActiveSection(`/#${entry.target.id}`);
-          }
-        });
+        const intersectingEntry = entries
+          .reverse()
+          .find((entry) => entry.isIntersecting);
+
+        if (intersectingEntry) {
+          setActiveSection(`/#${intersectingEntry.target.id}`);
+        } else if (window.scrollY < firstSectionElement.offsetTop) {
+          // Handles scrolling back to the top (hero section)
+          setActiveSection("/");
+        }
       },
-      // Trigger when 20% of the section is visible
       { rootMargin: "0px 0px -80% 0px" }
     );
 
-    // Observe each section element
     const elements = homeNavItems.map((item) =>
       document.getElementById(item.href.substring(2))
     );
     elements.forEach((el) => el && observer.observe(el));
 
-    // Cleanup function to disconnect the observer
     return () => elements.forEach((el) => el && observer.unobserve(el));
   }, [pathname, homeNavItems]);
 
-  // Determine the label to display based on the active section or current path
+  // Determine the label for the rotating link
   const displayLabel = useMemo(() => {
+    // On the homepage, show the current section's label
     if (pathname === "/") {
-      // Find the label for the active section, default to "Home"
       return (
         navItems.find((item) => item.href === activeSection)?.label ?? "Home"
       );
     }
-    // For other pages, find the corresponding label
-    return navItems.find((item) => item.href === pathname)?.label ?? "Home";
+    // On all other pages, default to "Home"
+    return "Home";
   }, [activeSection, pathname]);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-lg border-b border-slate-200/80">
+    <header
+      suppressHydrationWarning
+      className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-lg border-b border-slate-200/80"
+    >
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="text-2xl font-bold text-teal-700">
+            <Link href="/" className="text-xl font-bold text-teal-700">
               NutriGenius AI
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-4">
+          <nav className="hidden lg:flex items-center gap-6">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -104,7 +101,7 @@ const Header = () => {
               </PopoverTrigger>
               <PopoverContent className="w-56 p-2">
                 <div className="grid">
-                  <h4 className="font-medium leading-none text-sm px-2 py-1.5">
+                  <h4 className="font-medium leading-none text-sm px-2 py-1.5 text-muted-foreground">
                     Page Sections
                   </h4>
                   {homeNavItems.map((item) => (
@@ -113,8 +110,8 @@ const Header = () => {
                       href={item.href}
                       className={`block w-full rounded-sm px-2 py-1.5 text-start text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground ${
                         activeSection === item.href
-                          ? "font-bold text-teal-700"
-                          : "text-muted-foreground"
+                          ? "font-semibold text-teal-700"
+                          : "text-slate-700"
                       }`}
                     >
                       {item.label}
@@ -124,27 +121,38 @@ const Header = () => {
               </PopoverContent>
             </Popover>
 
+            {/* Clerk Authentication Buttons */}
             <SignedOut>
-              <SignInButton mode="modal" forceRedirectUrl={"/recipe-generator"}>
-                <Button variant="default" size="sm">
-                  Sign in
+              <SignInButton mode="modal" forceRedirectUrl="/recipe-generator">
+                <Button className="bg-teal-600 hover:bg-teal-700 text-base">
+                  Sign In
                 </Button>
               </SignInButton>
             </SignedOut>
-
             <SignedIn>
               <UserButton
+                afterSignOutUrl="/"
                 appearance={{
                   elements: {
-                    userButtonAvatarBox: "h-12 w-10",
+                    userButtonAvatarBox: "h-10 w-10",
                   },
                 }}
               />
             </SignedIn>
           </nav>
 
-          {/* --- THIS MOBILE SECTION IS UNTOUCHED --- */}
-          <div className="lg:hidden">
+          {/* --- MOBILE SECTION (UNCHANGED) --- */}
+          <div className="lg:hidden flex items-center gap-4">
+            <SignedOut>
+              <SignInButton mode="modal" forceRedirectUrl="/recipe-generator">
+                <Button className="bg-teal-600 hover:bg-teal-700">
+                  Sign In
+                </Button>
+              </SignInButton>
+            </SignedOut>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-slate-600 hover:text-teal-600 hover:bg-teal-50 focus:outline-none"
@@ -190,6 +198,7 @@ const Header = () => {
         </div>
       </div>
 
+      {/* Mobile Menu Content */}
       {isOpen && (
         <div
           id="mobile-menu"
@@ -213,5 +222,4 @@ const Header = () => {
   );
 };
 
-// Memoize the component to prevent re-renders when parent state changes
 export default memo(Header);
