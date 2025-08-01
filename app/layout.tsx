@@ -1,9 +1,10 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import Footer from "./components/layout/Footer";
 import Header from "./components/layout/Header";
-import "./globals.css";
 import { Toaster } from "./components/ui/Sonner";
+import "./globals.css";
 
 const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "700"] });
 
@@ -19,13 +20,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className={`${dmSans.className} antialiased text-slate-700`}>
-        <Header />
-        <main className="container mx-auto px-5 pt-20">{children}</main>
-        <Toaster />
-        <Footer />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className="scroll-smooth">
+        <body className={`${dmSans.className} antialiased text-slate-700`}>
+          <Header />
+          <main className="container mx-auto px-5 pt-20">{children}</main>
+          <Toaster />
+          <Footer />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
