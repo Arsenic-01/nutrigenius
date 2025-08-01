@@ -1,6 +1,10 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Button } from "../ui/Button";
 
 const Hero = () => {
+  const router = useRouter();
   return (
     <header className="py-20 md:py-32 text-center">
       <h1 className="text-4xl md:text-5xl font-bold text-slate-800 mb-6 tracking-tight">
@@ -10,7 +14,11 @@ const Hero = () => {
         Discover recipes customized to your dietary needs with NutriGenius AI —
         your smart companion for finding the perfect meal.
       </p>
-      <Button className="mt-8" size="lg">
+      <Button
+        className="mt-8"
+        size="lg"
+        onClick={() => router.push("/recipe-generator")}
+      >
         Get Started
       </Button>
     </header>

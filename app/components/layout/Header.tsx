@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/#architecture", label: "Architecture" },
@@ -10,48 +11,62 @@ const navItems = [
   { href: "/#algorithms", label: "Algorithms" },
   { href: "/#team", label: "Team" },
   { href: "/#citations", label: "Citations" },
-  { href: "/recipes", label: "Recipes" }, // ✅ New page link
+  { href: "/recipes", label: "Recipes" },
+  { href: "/recipe-generator", label: "Generator" },
 ];
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeLink, setActiveLink] = useState("");
+  const [activeSection, setActiveSection] = useState("");
+  const pathname = usePathname(); // Get the current page's path
 
+  // This effect handles the scroll-based active link for the homepage sections
   useEffect(() => {
-    const handleScroll = () => {
-      const sections = navItems
-        .filter((item) => item.href.startsWith("#")) // ✅ only in-page links
-        .map((item) => document.getElementById(item.href.substring(1)));
+    // Only run this logic if we are on the homepage
+    if (pathname === "/") {
+      const handleScroll = () => {
+        const sections = navItems
+          .filter((item) => item.href.startsWith("/#"))
+          .map((item) => document.getElementById(item.href.substring(2))); // Correctly get ID
 
-      const scrollPosition = window.pageYOffset;
-      let current = "";
+        const scrollPosition = window.pageYOffset;
+        let currentSectionId = "";
 
-      sections.forEach((section) => {
-        if (section && section.offsetTop <= scrollPosition + 120) {
-          current = `#${section.id}`;
+        sections.forEach((section) => {
+          if (section && section.offsetTop <= scrollPosition + 120) {
+            currentSectionId = `/#${section.id}`;
+          }
+        });
+
+        // Special case for the last section when at the bottom of the page
+        if (
+          window.innerHeight + window.scrollY >=
+          document.body.offsetHeight - 50
+        ) {
+          const lastSection = navItems.find(
+            (item) => item.href === "/#citations"
+          );
+          if (lastSection) {
+            currentSectionId = lastSection.href;
+          }
         }
-      });
 
-      // ✅ If scrolled to bottom
-      if (
-        window.innerHeight + window.scrollY >=
-        document.body.offsetHeight - 50
-      ) {
-        current = "#citations";
-      }
+        setActiveSection(currentSectionId);
+      };
 
-      setActiveLink(current);
-    };
+      window.addEventListener("scroll", handleScroll);
+      handleScroll(); // Call on mount to set initial state
 
-    window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Set initial active link
-
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+      return () => window.removeEventListener("scroll", handleScroll);
+    } else {
+      // If not on the homepage, clear the active section
+      setActiveSection("");
+    }
+  }, [pathname]); // Rerun this effect if the pathname changes
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-lg border-b border-slate-200/80">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex-shrink-0">
             <Link href="/" className="text-2xl font-bold text-teal-700">
@@ -60,17 +75,22 @@ const Header = () => {
           </div>
           <div className="hidden lg:block">
             <nav id="desktop-nav" className="flex items-center space-x-10">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`nav-link ${
-                    activeLink === item.href ? "active" : ""
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                // Determine if the link is active
+                const isActive = item.href.startsWith("/#")
+                  ? activeSection === item.href // Active if it's the current section on the homepage
+                  : pathname === item.href; // Active if it's the current page
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`nav-link ${isActive ? "active" : ""}`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </nav>
           </div>
           <div className="lg:hidden">
@@ -81,6 +101,7 @@ const Header = () => {
               aria-expanded={isOpen}
             >
               <span className="sr-only">Open main menu</span>
+              {/* Hamburger/Close Icon SVG */}
               {!isOpen ? (
                 <svg
                   className="h-6 w-6 block"

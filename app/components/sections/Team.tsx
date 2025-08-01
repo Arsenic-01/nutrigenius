@@ -10,23 +10,23 @@ const teamMembers = [
   {
     name: "Vedant Bhor",
     role: "Project & Full-Stack Lead",
-    imageUrl: "/placeholder-user.svg",
+    imageUrl: "/team/user_pfp/vedant.jpeg",
     tasks: [
       "Data Preprocessing & Cleaning",
       "Next.js Backend Architecture",
       "Frontend Development with Next.js",
     ],
     links: {
-      github: "#",
-      linkedin: "#",
-      discord: "#",
-      portfolio: "#",
+      github: "https://github.com/Arsenic-01/",
+      linkedin: "https://www.linkedin.com/in/vedant-bhor-39287828b/",
+      discord: "https://discord.com/users/862682607162359819",
+      portfolio: "https://vedantbhor.vercel.app/",
     },
   },
   {
     name: "Tanay Hingane",
     role: "AI & Authentication Specialist",
-    imageUrl: "/placeholder-user.svg",
+    imageUrl: "/team/user_pfp/tanay.jpeg",
     tasks: [
       "Core Algorithm Selection",
       "Dataset Imputation & Encoding",
@@ -34,31 +34,32 @@ const teamMembers = [
       "Meal History Feature Logic",
     ],
     links: {
-      github: "#",
-      linkedin: "#",
-      discord: "#",
-      portfolio: "#",
+      github: "https://github.com/TanayHingane",
+      linkedin: "http://www.linkedin.com/in/TanayHingane",
+      discord: "https://discord.com/users/1198554997386915880",
+      portfolio:
+        "https://www.snapchat.com/add/tanay.h03?share_id=L1uzTRlecFo&locale=en-IN",
     },
   },
   {
     name: "Adarsh Tile",
     role: "Backend & API Lead",
-    imageUrl: "/placeholder-user.svg",
+    imageUrl: "/team/user_pfp/adarsh.jpeg",
     tasks: [
       "Developing FastAPI Backend",
       "ML Model & API Integration",
       "API Endpoint Management",
     ],
     links: {
-      github: "#",
-      linkedin: "#",
+      github: "https://github.com/AdarshSanskar",
+      linkedin: "http://www.linkedin.com/in/tile-adarsh",
       discord: "#",
     },
   },
   {
     name: "Sushrut Deshmukh",
     role: "Machine Learning Engineer",
-    imageUrl: "/placeholder-user.svg",
+    imageUrl: "/team/user_pfp/sushrut.jpeg",
     tasks: [
       "Training & Tuning ML Models",
       "Model Performance Optimization",
@@ -73,7 +74,7 @@ const teamMembers = [
   {
     name: "Yadnesh Udar",
     role: "QA & Testing Lead",
-    imageUrl: "/placeholder-user.svg",
+    imageUrl: "/team/user_pfp/yadnesh.png",
     tasks: [
       "End-to-End Project Testing",
       "Unit & Integration Test Cases",
@@ -86,26 +87,6 @@ const teamMembers = [
     },
   },
 ];
-
-const UserPlaceholder = () => (
-  <div className="w-28 h-28 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="48"
-      height="48"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="text-slate-400"
-    >
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  </div>
-);
 
 const Team = () => {
   return (
@@ -124,7 +105,13 @@ const Team = () => {
             key={member.name}
             className="p-8 text-center flex flex-col items-center"
           >
-            <UserPlaceholder />
+            <Image
+              src={member.imageUrl}
+              alt={member.name}
+              width={200}
+              height={200}
+              className="w-32 h-32 rounded-full"
+            />
             <h3 className="mt-6 text-2xl font-bold text-slate-900">
               {member.name}
             </h3>
