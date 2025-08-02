@@ -19,6 +19,7 @@ import {
 } from "../components/ui/Dialog";
 import Section from "../components/ui/Section";
 import { Clock, Tag, Zap } from "lucide-react";
+import { apiUrl } from "../constant";
 
 // Updated Recipe interface to match the new API response
 interface Recipe {
@@ -39,7 +40,7 @@ interface ProcedureResponse {
 }
 
 const fetchProcedure = async (recipeId: number): Promise<ProcedureResponse> => {
-  const response = await fetch(`http://127.0.0.1:8000/procedure/${recipeId}`);
+  const response = await fetch(`${apiUrl}/procedure/${recipeId}`);
   if (!response.ok) {
     throw new Error("Network response was not ok");
   }

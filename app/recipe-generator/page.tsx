@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/Select";
+import { apiUrl } from "../constant";
 
 const formSchema = z.object({
   height_cm: z.coerce.number().positive("Height must be a positive number."),
@@ -70,7 +71,7 @@ const recommendRecipes = async (
     max_cooking_time: values.max_cooking_time || undefined,
   };
 
-  const response = await fetch("http://127.0.0.1:8000/recommend", {
+  const response = await fetch(`${apiUrl}/recommend`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(cleanedValues),
