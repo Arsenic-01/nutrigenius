@@ -168,7 +168,7 @@ function RecipeForm() {
             <FormItem>
               <FormLabel>Required Ingredient</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Chicken, Tofu, Broccoli" {...field} />
+                <Input placeholder="e.g., Paneer, Tofu, Broccoli" {...field} />
               </FormControl>
               <FormDescription>
                 The main ingredient you want in your meal.
@@ -186,7 +186,7 @@ function RecipeForm() {
               <FormLabel>Allergic Ingredient (Optional)</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="e.g., Peanuts, Shellfish, Gluten"
+                  placeholder="e.g., Peanuts, Brocoli, Gluten"
                   {...field}
                 />
               </FormControl>
