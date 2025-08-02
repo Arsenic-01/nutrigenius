@@ -6,6 +6,7 @@ import z from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "../components/ui/Button";
+
 import {
   Form,
   FormControl,
@@ -15,9 +16,11 @@ import {
   FormLabel,
   FormMessage,
 } from "../components/ui/Form";
+
 import { Input } from "../components/ui/Input";
 import { Slider } from "../components/ui/Slider";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 const formSchema = z.object({
   height: z.coerce.number().positive("Height must be a positive number."),
   weight: z.coerce.number().positive("Weight must be a positive number."),
@@ -25,17 +28,48 @@ const formSchema = z.object({
     .string()
     .min(1, "A required ingredient must be entered."),
   allergicIngredient: z.string().optional(),
-  estimatedTime: z.number(), // The slider ensures a value is always selected.
+  estimatedTime: z.number(),
   numResults: z.coerce
     .number()
     .min(1, "Please enter at least 1 result.")
     .max(50, "Please enter no more than 50 results."),
 });
 
-// Type alias for form values
 type RecipeFormValues = z.infer<typeof formSchema>;
 
-// The specific, unsorted time values for the slider.
+export interface Recipe {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  ingredients: string[];
+}
+
+interface ApiRecommendResponse {
+  recipes: Recipe[];
+}
+
+const recommendRecipes = async (
+  values: RecipeFormValues
+): Promise<ApiRecommendResponse> => {
+  const cleanedValues = {
+    ...values,
+    allergicIngredient: values.allergicIngredient || undefined,
+  };
+
+  const response = await fetch("http://127.0.0.1:8000/recommend", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cleanedValues),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  return response.json();
+};
+
 const timeValues = [
   45, 15, 50, 30, 40, 25, 120, 55, 20, 35, 60, 65, 90, 10, 70, 75, 51, 80, 135,
   100, 180, 160, 540, 63, 380, 600, 85, 18, 110, 265, 205, 150, 360, 495, 175,
@@ -48,12 +82,12 @@ const timeValues = [
   2925, 350, 520, 69, 365, 38, 505, 740, 920, 215, 830, 345, 535, 37, 73, 415,
   0, 450, 720, 325, 730, 245, 1440, 31, 395, 310, 34, 58,
 ];
-// Sort the values to use with the slider's index.
 const sortedTimeValues = [...timeValues].sort((a, b) => a - b);
 
 function RecipeForm() {
   const router = useRouter();
-  // 2. Define the form using react-hook-form.
+  const queryClient = useQueryClient();
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -66,42 +100,27 @@ function RecipeForm() {
     },
   });
 
-  // Watch the estimatedTime value to display it dynamically.
   const watchedTime = form.watch("estimatedTime");
 
-  // 3. Define a submit handler.
-  async function onSubmit(values: RecipeFormValues) {
-  const cleanedValues = {
-    ...values,
-    allergicIngredient: values.allergicIngredient || undefined,
-  };
+  const mutation = useMutation({
+    mutationFn: recommendRecipes,
+    onSuccess: (data) => {
+      toast.success("Recipes generated successfully! 🎉");
+      queryClient.setQueryData(["recipes"], data.recipes);
+      console.log("Data set to recipes", data.recipes);
 
-  try {
-    const response = await fetch("http://127.0.0.1:8000/recommend", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(cleanedValues),
-    });
+      router.push("/recipes");
+      form.reset();
+    },
+    onError: (error) => {
+      toast.error("Error submitting form. Please try again.");
+      console.error("Error submitting form:", error);
+    },
+  });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("Backend Response: ", data);
-
-    // ✅ Save recipes to localStorage
-    sessionStorage.setItem("recipes", JSON.stringify(data.recipes));
-
-
-    // ✅ Redirect to recipes page
-    window.location.href = "/recipes";
-    
-  } catch (error) {
-    console.error("Error submitting form:", error);
+  function onSubmit(values: RecipeFormValues) {
+    mutation.mutate(values);
   }
-}
-
 
   return (
     <Form {...form}>
@@ -160,7 +179,6 @@ function RecipeForm() {
             )}
           />
         </div>
-
         <FormField
           control={form.control}
           name="requiredIngredient"
@@ -177,7 +195,6 @@ function RecipeForm() {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="allergicIngredient"
@@ -197,7 +214,6 @@ function RecipeForm() {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="estimatedTime"
@@ -230,7 +246,6 @@ function RecipeForm() {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="numResults"
@@ -259,9 +274,13 @@ function RecipeForm() {
             </FormItem>
           )}
         />
-
-        <Button type="submit" className="w-full md:w-auto">
-          Generate Recipes
+        {/* 4. Disable the button and show a loading state while the mutation is pending. */}
+        <Button
+          type="submit"
+          className="w-full md:w-auto"
+          disabled={mutation.isPending}
+        >
+          {mutation.isPending ? "Generating..." : "Generate Recipes"}
         </Button>
       </form>
     </Form>

@@ -5,10 +5,10 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
+        // This allows any hostname, which is convenient for development
+        // when image sources are unpredictable.
         protocol: "https",
-        hostname: "images.unsplash.com",
-        port: "",
-        pathname: "/",
+        hostname: "**",
       },
     ],
   },

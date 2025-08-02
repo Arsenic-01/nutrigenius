@@ -105,14 +105,14 @@ const Architecture = () => {
               👤 Frontend (Next.js)
             </ServiceNode>
             <div className="text-teal-500 font-bold text-2xl">↓</div>
-            <ServiceNode id="auth-node" className="border-red-300 bg-red-50">
+            <ServiceNode id="auth-node" className="border-purple-300 bg-red-50">
               🛡️ User Authentication
             </ServiceNode>
             <div className="text-teal-500 font-bold text-2xl">↓</div>
 
             <ServiceNode
               id="gateway-node"
-              className="border-amber-300 bg-amber-50"
+              className="border-blue-300 bg-blue-300"
             >
               🚪 API Gateway (FastAPI)
             </ServiceNode>
@@ -120,19 +120,19 @@ const Architecture = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full text-center">
               <ServiceNode
                 id="profile-node"
-                className="border-sky-400 bg-sky-50 p-2"
+                className="border-gray-300 bg-sky-50 p-2"
               >
                 👤 User Profile
               </ServiceNode>
               <ServiceNode
                 id="recipe-node"
-                className="border-sky-400 bg-sky-50 p-2"
+                className="border-gray-300 bg-sky-50 p-2"
               >
                 👨‍🍳 Recipe Data
               </ServiceNode>
               <ServiceNode
                 id="ml-node"
-                className="border-sky-400 bg-sky-50 p-2"
+                className="border-gray-300 bg-sky-50 p-2"
               >
                 🧠 ML Inference
               </ServiceNode>

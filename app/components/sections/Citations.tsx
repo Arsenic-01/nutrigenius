@@ -3,15 +3,15 @@ import Section from "../ui/Section";
 const citations = [
   {
     href: "https://ieeexplore.ieee.org/document/10169703",
-    text: "A. D. Murumkar, Anamika Singh, B. R. Chachar, B. D. Bagade, G. Zaware. “Artificial Intelligence (AI) based Nutrition Advisorusing an App”, 2023 International Conference on Sustainable Computing and Smart Systems (ICSCSS), DOI: 10.1109/ICSCSS57650.2023.10169703",
+    text: "A. D. Murumkar, A. Singh, B. R. Chachar, P. D. Bagade and G. Zaware, 'Artificial Intelligence (AI) based Nutrition Advisorusing an App,' 2023 International Conference on Sustainable Computing and Smart Systems (ICSCSS), Coimbatore, India, 2023, pp. 586-590, doi: 10.1109/ICSCSS57650.2023.10169703. keywords: {Proteins;Schedules;Dairy products;Machine learning;Artificial intelligence;Diseases;AI (Artificial Intelligence);Diet Plan;Counselor;BMI (Body Mass Index);Dietitian;AI technology;Diet Evaluation;Intelligent Health Management;Smart Diet Plan},",
   },
   {
     href: "https://ieeexplore.ieee.org/document/10859953",
-    text: "J. Kanjalkar, P. Kanjalkar, R. Khanke; R. Mane, K. Kharat, K. Kolhe. “An AI-Driven Framework for Personalized Diet Generation and Nutrition Suggestions Using Machine Learning, Computer Vision and NLP”, 2024 International Conference on Integrated Intelligence and Communication Systems (ICIICS), DOI: 10.1109/ICIICS63763.2024.10859953",
+    text: "J. Kanjalkar, P. Kanjalkar, R. Khanke, R. Mane, K. Kharat and K. Kolhe, 'An AI-Driven Framework for Personalized Diet Generation and Nutrition Suggestions Using Machine Learning, Computer Vision and NLP,' 2024 International Conference on Integrated Intelligence and Communication Systems (ICIICS), Kalaburagi, India, 2024, pp. 1-9, doi: 10.1109/ICIICS63763.2024.10859953. keywords: {Photography;Computer vision;Wearable Health Monitoring Systems;Visualization;Web services;Real-time systems;Natural language processing;User experience;Satellite images;Allergies;VGG16;KNN;natural language processing;LLM3;deep learning},",
   },
   {
     href: "https://ieeexplore.ieee.org/document/10916135",
-    text: "I-Cheng Chang, Nguyen Minh Trang, Ken Chang, Kenrick Albert. Diet advisor: an image-based food intake analysis and meal recommendation system ”, International Conference on Innovation, Communication and Engineering 2024 (ICICE 2024), DOI: 10.1049/icp.2025.0183",
+    text: "I. -C. Chang, N. M. Trang, K. Chang and K. Albert, 'Diet advisor: an image-based food intake analysis and meal recommendation system,' International Conference on Innovation, Communication and Engineering 2024 (ICICE 2024), Danang, Vietnam, 2024, pp. 37-39, doi: 10.1049/icp.2025.0183.",
   },
 ];
 

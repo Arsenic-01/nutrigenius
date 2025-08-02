@@ -81,9 +81,9 @@ const teamMembers = [
       "Overall Quality Assurance",
     ],
     links: {
-      github: "#",
-      linkedin: "#",
-      discord: "#",
+      github: "https://github.com/Yadneshudar13",
+      linkedin: "https://www.linkedin.com/in/yadnesh-udar-a0b9922b7",
+      discord: "https://discord.com/users/1149927132290629662",
     },
   },
 ];
