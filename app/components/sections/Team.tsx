@@ -53,7 +53,7 @@ const teamMembers = [
     links: {
       github: "https://github.com/AdarshSanskar",
       linkedin: "http://www.linkedin.com/in/tile-adarsh",
-      discord: "#",
+      discord: "https://discord.com/users/1235115974534103091",
     },
   },
   {
@@ -66,9 +66,9 @@ const teamMembers = [
       "Implementing Core Algorithms",
     ],
     links: {
-      github: "#",
-      linkedin: "#",
-      discord: "#",
+      github: "https://github.com/Sushrut2007",
+      linkedin: "www.linkedin.com/in/sushrut-deshmukh-7266622b6",
+      discord: "https://discord.com/users/832471792627089448",
     },
   },
   {

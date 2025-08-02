@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import z from "zod";
-
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "../components/ui/Button";
 import {
@@ -52,6 +52,7 @@ const timeValues = [
 const sortedTimeValues = [...timeValues].sort((a, b) => a - b);
 
 function RecipeForm() {
+  const router = useRouter();
   // 2. Define the form using react-hook-form.
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -70,44 +71,37 @@ function RecipeForm() {
 
   // 3. Define a submit handler.
   async function onSubmit(values: RecipeFormValues) {
-    // Clean up the allergic ingredient field if it's empty
+  const cleanedValues = {
+    ...values,
+    allergicIngredient: values.allergicIngredient || undefined,
+  };
 
-    const cleanedValues = {
-      ...values,
-      allergicIngredient: values.allergicIngredient || undefined,
-    };
+  try {
+    const response = await fetch("http://127.0.0.1:8000/recommend", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(cleanedValues),
+    });
 
-    const { allergicIngredient, ...apiValues } = cleanedValues;
-
-    try {
-      const response = await fetch("http://127.0.0.1:8000/recommend", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(apiValues),
-      });
-      const data = await response.json();
-      console.log("Backend Responce: ", data);
-
-      toast("Response", {
-        description: (
-          <pre className="mt-2 w-auto rounded-md bg-slate-950 p-4">
-            <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-          </pre>
-        ),
-        duration: 5000,
-        richColors: true,
-      });
-      console.log("Recipe Form Submission:", cleanedValues);
-    } catch (err) {
-      console.log(
-        "An Error Occured when trying to send data to the Python Backend via FastAPI : ",
-        err
-      );
-      toast.error("Failed to send data to FastAPI.");
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    form.reset();
+    const data = await response.json();
+    console.log("Backend Response: ", data);
+
+    // ✅ Save recipes to localStorage
+    sessionStorage.setItem("recipes", JSON.stringify(data.recipes));
+
+
+    // ✅ Redirect to recipes page
+    window.location.href = "/recipes";
+    
+  } catch (error) {
+    console.error("Error submitting form:", error);
   }
+}
+
 
   return (
     <Form {...form}>

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "../components/ui/Card";
 import Section from "../components/ui/Section";
 import Image from "next/image";
@@ -11,46 +11,30 @@ interface Recipe {
   ingredients: string[];
 }
 
-const recipes: Recipe[] = [
-  {
-    title: "Paneer Butter Masala",
-    description:
-      "A creamy North Indian curry made with paneer, butter, and rich tomato gravy.",
-    image: "/recipes/PaneerButterMasala.jpeg",
-    ingredients: [
-      "Paneer",
-      "Butter",
-      "Masala",
-      "Green Peas",
-      "Curry Leaves",
-      "Coriander",
-    ],
-  },
-  {
-    title: "Veg Pulao",
-    description:
-      "Fragrant basmati rice cooked with seasonal vegetables and aromatic spices.",
-    image: "/recipes/VegPulaoo.jpg",
-    ingredients: ["Rice", "Carrot", "Peas", "Beans", "Ghee", "Spices"],
-  },
-  {
-    title: "Masala Dosa",
-    description:
-      "South Indian delicacy with crispy dosa and spiced potato filling.",
-    image: "/recipes/MasalaDosa.jpg",
-    ingredients: [
-      "Rice Batter",
-      "Potato",
-      "Onion",
-      "Curry Leaves",
-      "Mustard Seeds",
-      "Chutney",
-    ],
-  },
-];
-
 export default function RecipesPage() {
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  // ✅ Load recipes from localStorage when the page loads
+  useEffect(() => {
+    const storedRecipes = sessionStorage.getItem("recipes");
+    if (storedRecipes) {
+      setRecipes(JSON.parse(storedRecipes));
+    }
+  }, []);
+
+  if (recipes.length === 0) {
+    return (
+      <Section id="recipes" className="min-h-screen">
+        <h1 className="text-3xl md:text-4xl font-bold text-center mb-4 text-slate-800">
+          🍲 Recommended Recipes
+        </h1>
+        <p className="text-center text-slate-500 max-w-2xl mx-auto mb-12">
+          No recipes found. Please submit the form first.
+        </p>
+      </Section>
+    );
+  }
 
   return (
     <Section id="recipes" className="min-h-screen">
