@@ -1,17 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
-    remotePatterns: [
-      {
-        // This allows any hostname, which is convenient for development
-        // when image sources are unpredictable.
-        protocol: "https",
-        hostname: "**",
-      },
-    ],
+    // Disable optimization to allow images from any domain
+    unoptimized: true,
   },
+  allowedDevOrigins: ["http://192.168.1.39:3000"],
 };
 
 export default nextConfig;

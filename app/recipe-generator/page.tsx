@@ -18,43 +18,56 @@ import {
 } from "../components/ui/Form";
 
 import { Input } from "../components/ui/Input";
-import { Slider } from "../components/ui/Slider";
-
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/Select";
+
 const formSchema = z.object({
-  height: z.coerce.number().positive("Height must be a positive number."),
-  weight: z.coerce.number().positive("Weight must be a positive number."),
-  requiredIngredient: z
+  height_cm: z.coerce.number().positive("Height must be a positive number."),
+  weight_kg: z.coerce.number().positive("Weight must be a positive number."),
+  desired_ingredients: z
     .string()
-    .min(1, "A required ingredient must be entered."),
-  allergicIngredient: z.string().optional(),
-  estimatedTime: z.number(),
-  numResults: z.coerce
-    .number()
-    .min(1, "Please enter at least 1 result.")
-    .max(50, "Please enter no more than 50 results."),
+    .min(3, "Please enter at least one ingredient."),
+  user_allergies: z.string().optional(),
+  meal_type: z.string(),
+  weight_goal: z.string(),
+  diet_preference: z.string().optional(),
+  max_cooking_time: z.coerce.number().positive().optional(),
 });
 
 type RecipeFormValues = z.infer<typeof formSchema>;
 
+// Updated Recipe interface to match the API response
 export interface Recipe {
   id: number;
-  title: string;
-  description: string;
+  RecipeName: string;
+  Cuisine?: string;
+  Course?: string;
+  Diet?: string;
+  URL?: string;
   image: string;
-  ingredients: string[];
+  PrepTimeInMins?: number;
+  CookTimeInMins?: number;
+  TotalTimeInMins?: number;
 }
 
-interface ApiRecommendResponse {
-  recipes: Recipe[];
-}
+// The API now returns a direct list of recipes
+type ApiRecommendResponse = Recipe[];
 
 const recommendRecipes = async (
   values: RecipeFormValues
 ): Promise<ApiRecommendResponse> => {
+  // Clean up optional values so they are not sent if empty
   const cleanedValues = {
     ...values,
-    allergicIngredient: values.allergicIngredient || undefined,
+    user_allergies: values.user_allergies || undefined,
+    diet_preference: values.diet_preference || undefined,
+    max_cooking_time: values.max_cooking_time || undefined,
   };
 
   const response = await fetch("http://127.0.0.1:8000/recommend", {
@@ -70,19 +83,21 @@ const recommendRecipes = async (
   return response.json();
 };
 
-const timeValues = [
-  45, 15, 50, 30, 40, 25, 120, 55, 20, 35, 60, 65, 90, 10, 70, 75, 51, 80, 135,
-  100, 180, 160, 540, 63, 380, 600, 85, 18, 110, 265, 205, 150, 360, 495, 175,
-  440, 220, 230, 190, 410, 370, 5, 550, 200, 130, 105, 235, 300, 290, 22, 165,
-  46, 280, 140, 620, 155, 250, 145, 270, 95, 960, 430, 390, 330, 610, 545, 7,
-  420, 320, 480, 17, 315, 47, 24, 195, 225, 28, 42, 800, 570, 405, 580, 170,
-  435, 375, 48, 16, 71, 27, 500, 525, 510, 305, 76, 68, 260, 515, 52, 149, 185,
-  445, 12, 539, 765, 630, 400, 115, 980, 62, 11, 210, 255, 240, 125, 4, 54, 335,
-  29, 560, 565, 340, 460, 13, 530, 79, 67, 795, 455, 285, 89, 258, 53, 425,
-  2925, 350, 520, 69, 365, 38, 505, 740, 920, 215, 830, 345, 535, 37, 73, 415,
-  0, 450, 720, 325, 730, 245, 1440, 31, 395, 310, 34, 58,
+// Predefined options for the new dropdowns
+const mealTypeOptions = ["Breakfast", "Lunch", "Dinner", "Snack", "Dessert"];
+const weightGoalOptions = ["Lose", "Maintain", "Gain"];
+const dietOptions = [
+  "Vegetarian",
+  "Non Vegeterian",
+  "Eggetarian",
+  "Vegan",
+  "Diabetic Friendly",
+  "High Protein Vegetarian",
+  "High Protein Non Vegetarian",
+  "Gluten Free",
+  "No Onion No Garlic (Sattvic)",
+  "Sugar Free Diet",
 ];
-const sortedTimeValues = [...timeValues].sort((a, b) => a - b);
 
 function RecipeForm() {
   const router = useRouter();
@@ -91,24 +106,22 @@ function RecipeForm() {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      height: 175,
-      weight: 70,
-      requiredIngredient: "",
-      allergicIngredient: "",
-      numResults: 10,
-      estimatedTime: sortedTimeValues.includes(30) ? 30 : sortedTimeValues[0],
+      height_cm: 175,
+      weight_kg: 70,
+      desired_ingredients: "",
+      user_allergies: "",
+      meal_type: "Dinner",
+      weight_goal: "Maintain",
+      diet_preference: "Vegetarian",
+      max_cooking_time: 60,
     },
   });
-
-  const watchedTime = form.watch("estimatedTime");
 
   const mutation = useMutation({
     mutationFn: recommendRecipes,
     onSuccess: (data) => {
       toast.success("Recipes generated successfully! 🎉");
-      queryClient.setQueryData(["recipes"], data.recipes);
-      console.log("Data set to recipes", data.recipes);
-
+      queryClient.setQueryData(["recipes"], data);
       router.push("/recipes");
       form.reset();
     },
@@ -128,7 +141,7 @@ function RecipeForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
-            name="height"
+            name="height_cm"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Height (cm)</FormLabel>
@@ -145,16 +158,13 @@ function RecipeForm() {
                     }
                   />
                 </FormControl>
-                <FormDescription>
-                  Enter your height in centimeters.
-                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
           <FormField
             control={form.control}
-            name="weight"
+            name="weight_kg"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Weight (kg)</FormLabel>
@@ -171,93 +181,144 @@ function RecipeForm() {
                     }
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="desired_ingredients"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Desired Ingredients</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="e.g., Paneer, Tofu, Broccoli"
+                    {...field}
+                  />
+                </FormControl>
                 <FormDescription>
-                  Enter your weight in kilograms.
+                  The main ingredients you want. Separate with commas.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="user_allergies"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Allergies (Optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Peanuts, Gluten" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Any ingredients you are allergic to.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <FormField
+            control={form.control}
+            name="meal_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Meal Type</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a meal type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {mealTypeOptions.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="weight_goal"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Weight Goal</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select your goal" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {weightGoalOptions.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="diet_preference"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Diet Preference</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a diet" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {dietOptions.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
         <FormField
           control={form.control}
-          name="requiredIngredient"
+          name="max_cooking_time"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Required Ingredient</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g., Paneer, Tofu, Broccoli" {...field} />
-              </FormControl>
-              <FormDescription>
-                The main ingredient you want in your meal.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="allergicIngredient"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Allergic Ingredient (Optional)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="e.g., Peanuts, Brocoli, Gluten"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Any ingredients you are allergic to.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="estimatedTime"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Estimated Cooking Time</FormLabel>
-              <FormControl>
-                <div>
-                  <div className="flex flex-col md:flex-row my-2 justify-between items-start md:items-center mb-2">
-                    <FormDescription>
-                      Slide to select the maximum cooking time.
-                    </FormDescription>
-                    <span className="font-semibold text-primary text-lg">
-                      {watchedTime} min
-                    </span>
-                  </div>
-                  <Slider
-                    value={[sortedTimeValues.indexOf(field.value)]}
-                    onValueChange={(value) =>
-                      field.onChange(sortedTimeValues[value[0]])
-                    }
-                    min={0}
-                    max={sortedTimeValues.length - 1}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="numResults"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Number of Results</FormLabel>
+              <FormLabel>Max Cooking Time (mins, Optional)</FormLabel>
               <FormControl>
                 <Input
                   type="number"
-                  min="1"
-                  max="50"
-                  placeholder="1-50"
+                  placeholder="e.g., 45"
                   {...field}
                   value={
                     typeof field.value === "number" ||
@@ -268,13 +329,13 @@ function RecipeForm() {
                 />
               </FormControl>
               <FormDescription>
-                How many recipe suggestions do you want? (1-50)
+                Set a maximum total cooking time for recipes.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        {/* 4. Disable the button and show a loading state while the mutation is pending. */}
+
         <Button
           type="submit"
           className="w-full md:w-auto"

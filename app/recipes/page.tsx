@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import Card from "../components/ui/Card";
-import Section from "../components/ui/Section";
 import { Button } from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import {
   Dialog,
   DialogClose,
@@ -18,13 +17,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../components/ui/Dialog";
+import Section from "../components/ui/Section";
+import { Clock, Tag, Zap } from "lucide-react";
 
+// Updated Recipe interface to match the new API response
 interface Recipe {
   id: number;
-  title: string;
-  description: string;
+  RecipeName: string;
+  Cuisine?: string;
+  Course?: string;
+  Diet?: string;
+  URL?: string;
   image: string;
-  ingredients: string[];
+  PrepTimeInMins?: number;
+  CookTimeInMins?: number;
+  TotalTimeInMins?: number;
 }
 
 interface ProcedureResponse {
@@ -80,18 +87,14 @@ function ProcedureDialog({ recipeId }: { recipeId: number }) {
 
 export default function RecipesPage() {
   const router = useRouter();
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const queryClient = useQueryClient();
 
-  const { data: recipes } = useQuery<Recipe[]>({
-    queryKey: ["recipes"],
-    queryFn: () => Promise.resolve([]),
-    initialData: [],
-  });
+  const recipes = queryClient.getQueryData<Recipe[]>(["recipes"]);
 
   if (!recipes || recipes.length === 0) {
     return (
-      <Section id="recipes" className="min-h-screen">
+      <div id="recipes" className="min-h-screen py-16">
         <h1 className="text-3xl md:text-4xl font-bold text-center mb-4 text-slate-800">
           🍲 Recommended Recipes
         </h1>
@@ -100,10 +103,10 @@ export default function RecipesPage() {
         </p>
         <div className="text-center">
           <Button onClick={() => router.push("/recipe-generator")}>
-            Go Back
+            Go Back To Generator
           </Button>
         </div>
-      </Section>
+      </div>
     );
   }
 
@@ -112,7 +115,7 @@ export default function RecipesPage() {
       open={!!selectedRecipe}
       onOpenChange={(isOpen) => !isOpen && setSelectedRecipe(null)}
     >
-      <Section id="recipes" className="min-h-screen">
+      <div id="recipes" className="min-h-screen py-16">
         <h1 className="text-3xl md:text-4xl font-bold text-center mb-4 text-slate-800">
           🍲 Recommended Recipes
         </h1>
@@ -122,12 +125,7 @@ export default function RecipesPage() {
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {recipes.map((recipe, index) => {
-            const isExpanded = expandedIndex === index;
-            const visibleIngredients = isExpanded
-              ? recipe.ingredients
-              : recipe.ingredients.slice(0, 3);
-
+          {recipes.map((recipe) => {
             return (
               <DialogTrigger asChild key={recipe.id}>
                 <Card
@@ -136,39 +134,34 @@ export default function RecipesPage() {
                 >
                   <Image
                     src={recipe.image}
-                    alt={recipe.title}
+                    alt={recipe.RecipeName}
                     className="w-full h-48 object-cover select-none pointer-events-none"
                     width={400}
                     height={200}
                   />
                   <div className="p-6 flex flex-col flex-grow">
-                    <h2 className="text-xl font-bold text-slate-800 mb-2">
-                      {recipe.title}
+                    <h2 className="text-xl font-bold text-slate-800 mb-3">
+                      {recipe.RecipeName}
                     </h2>
-                    <p className="text-slate-600 mb-4 flex-grow">
-                      {recipe.description}
-                    </p>
-                    <div className="flex flex-wrap gap-2 items-center mt-auto">
-                      {visibleIngredients.map((ingredient, i) => (
-                        <span
-                          key={i}
-                          className="bg-teal-100 text-teal-700 text-xs px-3 py-1 rounded-full"
-                        >
-                          {ingredient}
-                        </span>
-                      ))}
-                      {recipe.ingredients.length > 3 && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation(); // Prevent dialog from opening
-                            setExpandedIndex(isExpanded ? null : index);
-                          }}
-                          className="bg-slate-200 text-slate-700 text-xs w-6 h-6 flex items-center justify-center font-mono rounded-full hover:bg-slate-300 transition"
-                        >
-                          {isExpanded
-                            ? "−"
-                            : `+${recipe.ingredients.length - 3}`}
-                        </button>
+
+                    <div className="space-y-3 mt-auto pt-4 border-t border-slate-200">
+                      {recipe.Cuisine && (
+                        <div className="flex items-center text-sm text-slate-600">
+                          <Tag className="w-4 h-4 mr-2 text-sky-600" />
+                          <span>{recipe.Cuisine}</span>
+                        </div>
+                      )}
+                      {recipe.Diet && (
+                        <div className="flex items-center text-sm text-slate-600">
+                          <Zap className="w-4 h-4 mr-2 text-amber-600" />
+                          <span>{recipe.Diet}</span>
+                        </div>
+                      )}
+                      {recipe.TotalTimeInMins && (
+                        <div className="flex items-center text-sm text-slate-600">
+                          <Clock className="w-4 h-4 mr-2 text-slate-500" />
+                          <span>{recipe.TotalTimeInMins} minutes</span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -177,23 +170,37 @@ export default function RecipesPage() {
             );
           })}
         </div>
-      </Section>
+      </div>
 
       <DialogContent className="!max-w-3xl w-full">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
-            {selectedRecipe?.title}
+            {selectedRecipe?.RecipeName}
           </DialogTitle>
           <DialogDescription>
             Follow these steps to prepare your delicious meal.
           </DialogDescription>
         </DialogHeader>
-        <div className="my-6">
+        <div className="my-6 max-h-[60vh] overflow-y-auto pr-4">
           {selectedRecipe && <ProcedureDialog recipeId={selectedRecipe.id} />}
         </div>
-        <DialogFooter>
+        <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+          {selectedRecipe?.URL && (
+            <a
+              href={selectedRecipe.URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto mr-2"
+            >
+              <Button variant="secondary" className="w-full">
+                View Full Recipe
+              </Button>
+            </a>
+          )}
           <DialogClose asChild>
-            <Button variant="outline">Close</Button>
+            <Button variant="outline" className="w-full sm:w-auto">
+              Close
+            </Button>
           </DialogClose>
         </DialogFooter>
       </DialogContent>
