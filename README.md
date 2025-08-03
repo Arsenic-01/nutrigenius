@@ -13,7 +13,7 @@ Welcome to the frontend of NutriGenius, a smart recipe recommendation system bui
 - **View Full Procedure:** Users can click on any recipe card to view the full step-by-step cooking instructions in a dialog modal.
 - **External Recipe Links:** Provides a direct link to view the full, original recipe on its source website.
 - **Responsive Design:** Fully responsive interface that works seamlessly on desktop, tablet, and mobile devices.
-- **Blazing Fast API** FastAPI backend, serving recipes in under 100ms.
+- **Blazing Fast API:** FastAPI backend, serving recipes in under 100ms.
 
 ## 🛠️ Tech Stack
 
@@ -23,7 +23,7 @@ Welcome to the frontend of NutriGenius, a smart recipe recommendation system bui
 - **UI Components:** [Shadcn/UI](https://ui.shadcn.com/)
 - **Form Management:** [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
 - **Data Fetching:** [TanStack Query (React Query)](https://tanstack.com/query/latest)
-- **Backend:** [Python(FastAPI)](https://fastapi.tiangolo.com/)
+- **Backend:** [Python (FastAPI)](https://fastapi.tiangolo.com/)
 - **Machine Learning:** [Scikit-learn](https://scikit-learn.org/stable/) & [Pandas](https://pandas.pydata.org/)
 
 ## 🚀 Getting Started
@@ -41,17 +41,13 @@ Follow these instructions to get a copy of the project up and running on your lo
 1.  **Clone the repository:**
 
     ```bash
-    git clone [https://github.com/Arsenic-01/nutrigenius-frontend.git](https://github.com/Arsenic-01/nutrigenius-frontend.git)
-    cd nutrigenius-frontend
+    git clone [https://github.com/Arsenic-01/nutrigenius.git](https://github.com/Arsenic-01/nutrigenius.git)
+    cd nutrigenius
     ```
 
 2.  **Install dependencies:**
     ```bash
     npm install
-    # or
-    yarn install
-    # or
-    pnpm install
     ```
 
 ### Environment Variables
@@ -63,7 +59,7 @@ To connect the frontend to your backend API and Clerk, you need to create an env
 
     ```
     # Backend API URL
-    NEXT_PUBLIC_API_URL=[http://127.0.0.1:8000](http://127.0.0.1:8000)
+    NEXT_PUBLIC_API_URL=[http://1227.0.0.1:8000](http://1227.0.0.1:8000)
 
     # Clerk Authentication Keys
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
@@ -77,22 +73,22 @@ To connect the frontend to your backend API and Clerk, you need to create an env
 In the project directory, you can run the following commands:
 
 - **`npm run dev`**
-  Runs the app in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser. The page will reload if you make edits.
+  Runs the app in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 - **`npm run build`**
-  Builds the app for production to the `.next` folder. It correctly bundles React in production mode and optimizes the build for the best performance.
+  Builds the app for production to the `.next` folder.
 
 - **`npm run start`**
-  Starts a production server. This should be run after building the application with `npm run build`.
+  Starts a production server after building the application.
 
 ## 🚢 Deployment
 
-The easiest way to deploy this Next.js application is by using [Vercel](https://vercel.com/), the creators of Next.js.
+The easiest way to deploy this Next.js application is by using [Vercel](https://vercel.com/).
 
 1.  **Push your code** to a GitHub repository.
 2.  **Import your project** on the Vercel dashboard.
-3.  **Configure Environment Variables:** In your Vercel project settings, go to the "Environment Variables" section and add your `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, and `CLERK_SECRET_KEY`.
-4.  **Deploy:** Vercel will automatically build and deploy your application. Any subsequent pushes to your main branch will trigger automatic redeployments.
+3.  **Configure Environment Variables:** In your Vercel project settings, add your `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, and `CLERK_SECRET_KEY`.
+4.  **Deploy:** Vercel will automatically build and deploy your application.
 
 ---
 

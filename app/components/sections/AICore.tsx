@@ -1,47 +1,75 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Section from "../ui/Section";
 import Card from "../ui/Card";
 import HorizontalBarChart from "../charts/HorizontalBarChart";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
+// Updated data to reflect the final model
 const engineSteps = [
   {
-    title: "Profile Vectorization",
+    title: "1. Filtering",
     description:
-      "Your dietary goals, allergies, and cuisine preferences are converted into a numerical 'preference vector.'",
-    color: "text-teal-700",
-  },
-  {
-    title: "Recipe Feature Analysis",
-    description:
-      "We analyze the `Cleaned-Ingredients` and `Cuisine` of all 5,940 recipes, creating a unique 'feature vector' for each one using TF-IDF.",
+      "The system first narrows down thousands of recipes by applying your hard constraints like `Cuisine`, `Diet`, `Meal Type`, and `Skill Level`.",
     color: "text-sky-700",
   },
   {
-    title: "Similarity Scoring",
+    title: "2. Feature Enrichment",
     description:
-      "Using Cosine Similarity, we calculate a score between your preference vector and every recipe vector to find the closest matches.",
-    color: "text-emerald-700",
+      "Each remaining recipe is enriched with pre-calculated data from our master dataset, including detailed `Nutritional Info` and a `Popularity Score`.",
+    color: "text-indigo-700",
   },
   {
-    title: "Rank & Recommend",
+    title: "3. Text Analysis",
     description:
-      "The highest-scoring recipes are ranked and presented to you as personalized recommendations.",
+      "Using `TF-IDF`, the model analyzes your `Desired Ingredients` to calculate a text similarity score for each candidate recipe.",
+    color: "text-teal-700",
+  },
+  {
+    title: "4. Intelligent Ranking",
+    description:
+      "A final, weighted score is calculated, combining text similarity, nutritional alignment with your `BMI` and `Goals`, and course suitability to find the perfect recommendations.",
     color: "text-rose-700",
   },
 ];
 
 const datasetFeatures = [
-  { name: "TranslatedRecipeName", icon: "📖" },
-  { name: "Cleaned-Ingredients", icon: "🌿" },
-  { name: "TotalTimeInMins", icon: "⏱️" },
+  { name: "RecipeName", icon: "📖" },
+  { name: "Cleaned_Ingredients", icon: "🌿" },
   { name: "Cuisine", icon: "🌶️" },
-  { name: "TranslatedInstructions", icon: "📝" },
-  { name: "Ingredient-count", icon: "🔢" },
+  { name: "Diet", icon: "❤️" },
+  { name: "Calories (kcal)", icon: "🔥" },
+  { name: "Protein (g)", icon: "💪" },
+  { name: "rating_avg", icon: "⭐" },
+  { name: "n_ratings", icon: "📊" },
 ];
 
 const AICore = () => {
   const [activeTab, setActiveTab] = useState("foundation");
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkForScroll = () => {
+    const el = tabsRef.current;
+    if (el) {
+      setCanScrollLeft(el.scrollLeft > 0);
+      setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth);
+    }
+  };
+
+  useEffect(() => {
+    checkForScroll();
+    window.addEventListener("resize", checkForScroll);
+    return () => window.removeEventListener("resize", checkForScroll);
+  }, []);
+
+  const scroll = (direction: "left" | "right") => {
+    tabsRef.current?.scrollBy({
+      left: direction === "left" ? -200 : 200,
+      behavior: "smooth",
+    });
+  };
 
   const TabButton = ({
     id,
@@ -52,7 +80,7 @@ const AICore = () => {
   }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-base transition-all duration-300 ${
+      className={`whitespace-nowrap py-4 px-2 sm:px-4 border-b-2 font-medium text-base transition-all duration-300 ${
         activeTab === id
           ? "border-teal-600 text-teal-600"
           : "border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700"
@@ -69,32 +97,54 @@ const AICore = () => {
           <span className="mr-3 text-2xl">🧠</span>The AI Core
         </h2>
         <p className="mt-4 mb-6 text-slate-500 max-w-3xl mx-auto">
-          Our system uses a single rich dataset and advanced analysis to deliver
-          accurate, culturally authentic, and deeply personalized
+          Our system fuses multiple high-quality datasets into a single,
+          optimized source of truth. This data-driven foundation allows our
+          intelligence engine to deliver fast and deeply personalized
           recommendations.
         </p>
       </div>
 
       <div className="max-w-6xl mx-auto mt-12">
-        <div className=" rounded-xl flex justify-start space-x-2 md:space-x-4 border-b border-slate-200">
-          <TabButton id="foundation">The Data Foundation</TabButton>
-          <TabButton id="engine">The Intelligence Engine</TabButton>
+        {/* --- NEW: Responsive Tab Navigation --- */}
+        <div className="relative border-b border-slate-200">
+          {canScrollLeft && (
+            <button
+              onClick={() => scroll("left")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm p-1 rounded-full shadow-md z-10"
+            >
+              <ChevronLeft className="h-6 w-6 text-slate-600" />
+            </button>
+          )}
+          <div
+            ref={tabsRef}
+            onScroll={checkForScroll}
+            className="flex space-x-2 sm:space-x-4 -mb-px overflow-x-auto no-scrollbar"
+          >
+            <TabButton id="foundation">The Data Foundation</TabButton>
+            <TabButton id="engine">The Intelligence Engine</TabButton>
+          </div>
+          {canScrollRight && (
+            <button
+              onClick={() => scroll("right")}
+              className="absolute right-0 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm p-1 rounded-full shadow-md z-10"
+            >
+              <ChevronRight className="h-6 w-6 text-slate-600" />
+            </button>
+          )}
         </div>
 
         <div className="mt-8">
           {activeTab === "foundation" && (
-            <div className="p-6 md:p-8 border border-neutral-200 rounded-xl">
+            <div className="p-6 md:p-8 border border-neutral-200 rounded-xl animate-fade-in">
               <div className="grid grid-cols-1 lg:grid-cols-6 gap-8 items-center">
                 <div className="lg:col-span-3">
                   <h3 className="text-2xl font-bold text-slate-800 mb-2">
-                    A Singular, High-Quality Dataset
+                    A Fused, High-Quality Master Dataset
                   </h3>
                   <div className="text-slate-600 mb-6">
-                    We exclusively utilize the{" "}
-                    <a href="https://www.kaggle.com/datasets/ashishpatel26/indian-recipes">
-                      Indian Recipe Dataset
-                    </a>{" "}
-                    from Kaggle, a corpus of over 5,940 recipes.
+                    We combine data from multiple sources—including our core
+                    Indian Recipe Dataset and a dedicated Indian Nutritional
+                    Database—into a single, pre-compiled master file.
                   </div>
                   <h4 className="font-semibold text-slate-700 mb-3 mt-8">
                     Key Attributes Analyzed:
@@ -121,12 +171,12 @@ const AICore = () => {
           )}
 
           {activeTab === "engine" && (
-            <div className="p-6 md:p-8 border border-neutral-200 rounded-xl">
+            <div className="p-6 md:p-8 border border-neutral-200 rounded-xl animate-fade-in">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 ">
-                {engineSteps.map((step, index) => {
+                {engineSteps.map((step) => {
                   return (
                     <Card
-                      key={index}
+                      key={step.title}
                       className={`relative p-5 border border-neutral-200 rounded-xl`}
                     >
                       <div className="flex items-center mb-4">

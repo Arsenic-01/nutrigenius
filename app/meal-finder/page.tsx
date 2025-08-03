@@ -17,8 +17,6 @@ import {
   FormMessage,
 } from "../components/ui/Form";
 
-import { Input } from "../components/ui/Input";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Select,
   SelectContent,
@@ -26,8 +24,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/Select";
+
+import { Input } from "../components/ui/Input";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiUrl } from "../constant";
 
+// Updated schema to include all new fields from the advanced model
 const formSchema = z.object({
   height_cm: z.coerce.number().positive("Height must be a positive number."),
   weight_kg: z.coerce.number().positive("Weight must be a positive number."),
@@ -39,6 +41,9 @@ const formSchema = z.object({
   weight_goal: z.string(),
   diet_preference: z.string().optional(),
   max_cooking_time: z.coerce.number().positive().optional(),
+  // New fields
+  skill_level: z.string().optional(),
+  pantry_ingredients: z.string().optional(),
 });
 
 type RecipeFormValues = z.infer<typeof formSchema>;
@@ -55,20 +60,28 @@ export interface Recipe {
   PrepTimeInMins?: number;
   CookTimeInMins?: number;
   TotalTimeInMins?: number;
+  Servings?: number;
 }
 
-// The API now returns a direct list of recipes
-type ApiRecommendResponse = Recipe[];
+// Interface for the new paginated API response
+interface PaginatedApiRecommendResponse {
+  recipes: Recipe[];
+  page: number;
+  total_pages: number;
+  has_next_page: boolean;
+}
 
 const recommendRecipes = async (
-  values: RecipeFormValues
-): Promise<ApiRecommendResponse> => {
+  values: RecipeFormValues & { page: number }
+): Promise<PaginatedApiRecommendResponse> => {
   // Clean up optional values so they are not sent if empty
   const cleanedValues = {
     ...values,
     user_allergies: values.user_allergies || undefined,
     diet_preference: values.diet_preference || undefined,
     max_cooking_time: values.max_cooking_time || undefined,
+    skill_level: values.skill_level || undefined,
+    pantry_ingredients: values.pantry_ingredients || undefined,
   };
 
   const response = await fetch(`${apiUrl}/recommend`, {
@@ -85,8 +98,9 @@ const recommendRecipes = async (
 };
 
 // Predefined options for the new dropdowns
-const mealTypeOptions = ["Breakfast", "Lunch", "Dinner", "Snack", "Dessert"];
+const mealTypeOptions = ["Breakfast", "Dinner", "Snack", "Dessert"];
 const weightGoalOptions = ["Lose", "Maintain", "Gain"];
+const skillLevelOptions = ["Beginner", "Intermediate", "Advanced"];
 const dietOptions = [
   "Vegetarian",
   "Non Vegeterian",
@@ -107,13 +121,14 @@ function RecipeForm() {
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      height_cm: 175,
-      weight_kg: 70,
+      height_cm: "",
+      weight_kg: "",
       desired_ingredients: "",
       user_allergies: "",
-      meal_type: "Dinner",
       weight_goal: "Maintain",
       diet_preference: "Vegetarian",
+      skill_level: "Intermediate",
+      pantry_ingredients: "",
     },
   });
 
@@ -121,7 +136,9 @@ function RecipeForm() {
     mutationFn: recommendRecipes,
     onSuccess: (data) => {
       toast.success("Recipes generated successfully! 🎉");
-      queryClient.setQueryData(["recipes"], data);
+      // Store the initial paginated response and the form values used to get it
+      queryClient.setQueryData(["recommendationResponse"], data);
+      queryClient.setQueryData(["lastRequest"], form.getValues());
       router.push("/recipes");
       form.reset();
     },
@@ -132,12 +149,14 @@ function RecipeForm() {
   });
 
   function onSubmit(values: RecipeFormValues) {
-    mutation.mutate(values);
+    // Always fetch the first page on a new submission
+    mutation.mutate({ ...values, page: 1 });
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {/* Height and Weight */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -187,6 +206,7 @@ function RecipeForm() {
           />
         </div>
 
+        {/* Ingredients and Allergies */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
@@ -195,14 +215,9 @@ function RecipeForm() {
               <FormItem>
                 <FormLabel>Desired Ingredients</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="e.g., Paneer, Tofu, Broccoli"
-                    {...field}
-                  />
+                  <Input placeholder="e.g., Paneer, Tofu" {...field} />
                 </FormControl>
-                <FormDescription>
-                  The main ingredients you want. Separate with commas.
-                </FormDescription>
+                <FormDescription>Separate with commas.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -216,15 +231,14 @@ function RecipeForm() {
                 <FormControl>
                   <Input placeholder="e.g., Peanuts, Gluten" {...field} />
                 </FormControl>
-                <FormDescription>
-                  Any ingredients you are allergic to.
-                </FormDescription>
+                <FormDescription>Ingredients to avoid.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
+        {/* Dropdowns */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <FormField
             control={form.control}
@@ -265,7 +279,7 @@ function RecipeForm() {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select your goal" />
+                      <SelectValue placeholder="Select weight goal" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -292,7 +306,7 @@ function RecipeForm() {
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a diet" />
+                      <SelectValue placeholder="Select diet preference" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -309,32 +323,49 @@ function RecipeForm() {
           />
         </div>
 
-        <FormField
-          control={form.control}
-          name="max_cooking_time"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Max Cooking Time (mins, Optional)</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="e.g., 45"
-                  {...field}
-                  value={
-                    typeof field.value === "number" ||
-                    typeof field.value === "string"
-                      ? field.value
-                      : ""
-                  }
-                />
-              </FormControl>
-              <FormDescription>
-                Set a maximum total cooking time for recipes.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* New Advanced Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField
+            control={form.control}
+            name="skill_level"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cooking Skill (Optional)</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select skill level" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {skillLevelOptions.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="pantry_ingredients"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Ingredients You Have (Optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., rice, onion, garlic" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <Button
           type="submit"
@@ -350,9 +381,9 @@ function RecipeForm() {
 
 export default function RecipeGenerator() {
   return (
-    <div className="max-w-3xl mx-auto py-12 md:py-14 mb-20">
+    <div className="max-w-3xl mx-auto py-12 md:py-14 mb-20 mt-20 md:mt-24">
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Recipe Generator</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Discover Recipes</h1>
         <p className="text-muted-foreground mt-2">
           Fill out the form below to get personalized recipe ideas.
         </p>

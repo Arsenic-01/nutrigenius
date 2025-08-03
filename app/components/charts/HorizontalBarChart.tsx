@@ -16,8 +16,8 @@ const HorizontalBarChart = () => {
           type: "bar",
           data: {
             labels: [
-              "Continental",
               "Indian",
+              "Continental",
               "North Indian",
               "South Indian",
               "Italian",
@@ -30,7 +30,7 @@ const HorizontalBarChart = () => {
             datasets: [
               {
                 label: "Number of Recipes",
-                data: [952, 927, 763, 558, 231, 152, 150, 138, 133, 133],
+                data: [1157, 1020, 936, 681, 235, 173, 175, 149, 156, 163],
                 backgroundColor: [
                   "rgba(59, 130, 246, 0.7)",
                   "rgba(245, 158, 11, 0.7)",

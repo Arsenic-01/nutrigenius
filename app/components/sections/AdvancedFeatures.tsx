@@ -3,16 +3,28 @@ import Card from "../ui/Card";
 
 const features = [
   {
-    icon: "🔍",
-    title: "Content Filtering Engine",
+    icon: "🧠",
+    title: "Dynamic Nutritional Analysis",
     description:
-      "The User can filter recipes based on their time frame, health goals, dietary preferences, cuisine and allergies.",
+      "Leverages a focused dataset of Indian cuisine to enrich every recipe with accurate nutritional data, including calories, protein, and fiber. This allows for true health-based recommendations.",
   },
   {
-    icon: "📅",
-    title: "Meal History Tracking",
+    icon: "🎯",
+    title: "Hyper-Personalized Ranking",
     description:
-      "The User can track their meal history and view their past recipes, helping them make informed choices for their meals.",
+      "Goes beyond keywords to rank results based on a multi-factor score, considering your BMI, health goals, cooking skill, and even ingredients you already have in your pantry.",
+  },
+  {
+    icon: "🍲",
+    title: "Context-Aware Recommendations",
+    description:
+      "The model understands the difference between a snack and a main course. When you ask for dinner, it intelligently prioritizes proper meals over appetizers to give you more suitable results.",
+  },
+  {
+    icon: "⚡️",
+    title: "Optimized for Speed",
+    description:
+      "All heavy data processing and merging is done once at startup. This creates a single, efficient master dataset, ensuring your recommendations are generated almost instantly.",
   },
 ];
 

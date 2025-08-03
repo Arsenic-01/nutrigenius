@@ -29,7 +29,7 @@ export default function RootLayout({
         >
           <Providers>
             <Header />
-            <main className="container mx-auto px-5 pt-20">{children}</main>
+            <main className="container mx-auto px-5">{children}</main>
             <Toaster />
             <Footer />
           </Providers>

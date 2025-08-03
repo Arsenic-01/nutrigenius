@@ -12,9 +12,10 @@ const teamMembers = [
     role: "Project & Full-Stack Lead",
     imageUrl: "/team/user_pfp/vedant.jpeg",
     tasks: [
-      "Data Preprocessing & Cleaning",
-      "Next.js Backend Architecture",
-      "Frontend Development with Next.js",
+      "Next.js Full Stack Development",
+      "Training & Tuning ML Models",
+      "Model Performance Optimization",
+      "Implementing Core Algorithms",
     ],
     links: {
       github: "https://github.com/Arsenic-01/",
@@ -28,10 +29,10 @@ const teamMembers = [
     role: "AI & Authentication Specialist",
     imageUrl: "/team/user_pfp/tanay.jpeg",
     tasks: [
-      "Core Algorithm Selection",
-      "Dataset Imputation & Encoding",
+      "Appwrite Database Management",
       "User Authentication with Clerk",
       "Meal History Feature Logic",
+      "User Profile Management",
     ],
     links: {
       github: "https://github.com/TanayHingane",
@@ -58,12 +59,12 @@ const teamMembers = [
   },
   {
     name: "Sushrut Deshmukh",
-    role: "Machine Learning Engineer",
+    role: "Core Algorithm Lead",
     imageUrl: "/team/user_pfp/sushrut.jpeg",
     tasks: [
-      "Training & Tuning ML Models",
+      "Suggesting Core Algorithms",
       "Model Performance Optimization",
-      "Implementing Core Algorithms",
+      "Project Report Writing",
     ],
     links: {
       github: "https://github.com/Sushrut2007",

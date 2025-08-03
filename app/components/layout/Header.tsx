@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { Button } from "../ui/Button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
+import Image from "next/image";
 
 // --- Data Definitions (Cleaned Up) ---
 const navItems = [
@@ -83,7 +84,16 @@ const Header = () => {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href="/" className="text-xl font-bold text-teal-700">
+            <Link
+              href="/"
+              className="text-xl font-bold text-teal-700 flex items-center justify-center"
+            >
+              <Image
+                src={"/brand_assets/logo.svg"}
+                alt="logo"
+                width={50}
+                height={50}
+              />
               NutriGenius AI
             </Link>
           </div>
@@ -123,7 +133,7 @@ const Header = () => {
 
             {/* Clerk Authentication Buttons */}
             <SignedOut>
-              <SignInButton mode="modal" forceRedirectUrl="/recipe-generator">
+              <SignInButton mode="modal" forceRedirectUrl="/meal-finder">
                 <Button className="bg-teal-600 hover:bg-teal-700 text-base">
                   Sign In
                 </Button>
@@ -144,7 +154,7 @@ const Header = () => {
           {/* --- MOBILE SECTION (UNCHANGED) --- */}
           <div className="lg:hidden flex items-center gap-4">
             <SignedOut>
-              <SignInButton mode="modal" forceRedirectUrl="/recipe-generator">
+              <SignInButton mode="modal" forceRedirectUrl="/meal-finder">
                 <Button className="bg-teal-600 hover:bg-teal-700">
                   Sign In
                 </Button>
