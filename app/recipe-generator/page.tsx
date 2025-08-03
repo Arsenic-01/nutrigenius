@@ -114,7 +114,6 @@ function RecipeForm() {
       meal_type: "Dinner",
       weight_goal: "Maintain",
       diet_preference: "Vegetarian",
-      max_cooking_time: 60,
     },
   });
 

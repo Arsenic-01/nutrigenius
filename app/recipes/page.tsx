@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Clock, Tag, Users, Zap } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import {
@@ -17,8 +18,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../components/ui/Dialog";
-import Section from "../components/ui/Section";
-import { Clock, Tag, Zap } from "lucide-react";
 import { apiUrl } from "../constant";
 
 // Updated Recipe interface to match the new API response
@@ -33,6 +32,7 @@ interface Recipe {
   PrepTimeInMins?: number;
   CookTimeInMins?: number;
   TotalTimeInMins?: number;
+  Servings?: number;
 }
 
 interface ProcedureResponse {
@@ -95,7 +95,7 @@ export default function RecipesPage() {
 
   if (!recipes || recipes.length === 0) {
     return (
-      <div id="recipes" className="min-h-screen py-16">
+      <div id="recipes" className="min-h-screen pt-12  mb-20">
         <h1 className="text-3xl md:text-4xl font-bold text-center mb-4 text-slate-800">
           🍲 Recommended Recipes
         </h1>
@@ -116,8 +116,8 @@ export default function RecipesPage() {
       open={!!selectedRecipe}
       onOpenChange={(isOpen) => !isOpen && setSelectedRecipe(null)}
     >
-      <div id="recipes" className="min-h-screen py-16">
-        <h1 className="text-3xl md:text-4xl font-bold text-center mb-4 text-slate-800">
+      <div id="recipes" className="min-h-screen py-12  mb-20">
+        <h1 className="text-3xl font-bold text-center mb-4 text-slate-800">
           🍲 Recommended Recipes
         </h1>
         <p className="text-center text-slate-500 max-w-2xl mx-auto mb-12">
@@ -125,7 +125,7 @@ export default function RecipesPage() {
           view the steps.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {recipes.map((recipe) => {
             return (
               <DialogTrigger asChild key={recipe.id}>
@@ -141,7 +141,7 @@ export default function RecipesPage() {
                     height={200}
                   />
                   <div className="p-6 flex flex-col flex-grow">
-                    <h2 className="text-xl font-bold text-slate-800 mb-3">
+                    <h2 className="text-lg font-bold text-slate-800 mb-3">
                       {recipe.RecipeName}
                     </h2>
 
@@ -164,6 +164,12 @@ export default function RecipesPage() {
                           <span>{recipe.TotalTimeInMins} minutes</span>
                         </div>
                       )}
+                      {recipe.TotalTimeInMins && (
+                        <div className="flex items-center text-sm text-slate-600">
+                          <Users className="w-4 h-4 mr-2 text-slate-500" />
+                          <span>{recipe.Servings} people</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -175,7 +181,7 @@ export default function RecipesPage() {
 
       <DialogContent className="!max-w-3xl w-full">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">
+          <DialogTitle className="text-xl font-bold">
             {selectedRecipe?.RecipeName}
           </DialogTitle>
           <DialogDescription>
