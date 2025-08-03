@@ -28,7 +28,7 @@ Welcome to the frontend of NutriGenius, a smart recipe recommendation system bui
 
 ## 🚀 Getting Started
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
+Follow these instructions to set up a local copy of the project for development and testing purposes.
 
 ### Prerequisites
 
@@ -59,7 +59,7 @@ To connect the frontend to your backend API and Clerk, you need to create an env
 
     ```
     # Backend API URL
-    NEXT_PUBLIC_API_URL=[http://1227.0.0.1:8000](http://1227.0.0.1:8000)
+    NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
 
     # Clerk Authentication Keys
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
