@@ -41,7 +41,7 @@ Follow these instructions to set up a local copy of the project for development 
 1.  **Clone the repository:**
 
     ```bash
-    git clone [https://github.com/Arsenic-01/nutrigenius.git](https://github.com/Arsenic-01/nutrigenius.git)
+    git clone https://github.com/Arsenic-01/nutrigenius.git
     cd nutrigenius
     ```
 
