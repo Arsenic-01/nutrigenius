@@ -385,7 +385,7 @@ export default function RecipesPage() {
                   <Image
                     src={recipe.image}
                     alt={recipe.RecipeName}
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 object-cover select-none pointer-events-none"
                     width={400}
                     height={200}
                   />

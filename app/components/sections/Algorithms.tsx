@@ -210,9 +210,10 @@ const Algorithms = () => {
                 </h3>
                 <p className="text-slate-600">
                   The biggest performance gain comes from doing all the heavy
-                  data processing and merging just **once** before the server
-                  starts. Instead of re-calculating nutrition for every user
-                  request, the model loads a single, pre-compiled{" "}
+                  data processing and merging just{" "}
+                  <strong className="text-slate-800">once</strong> before the
+                  server starts. Instead of re-calculating nutrition for every
+                  user request, the model loads a single, pre-compiled{" "}
                   <strong className="text-slate-800">master dataset</strong>.
                   This makes the system incredibly fast and scalable.
                 </p>

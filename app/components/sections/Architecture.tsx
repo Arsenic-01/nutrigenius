@@ -82,7 +82,7 @@ const Architecture = () => {
     <div
       id={id}
       onMouseOver={() => handleMouseOver(id)}
-      className={`service-node font-semibold border-2 rounded-lg p-3 w-full text-center bg-white shadow-sm cursor-pointer transition-transform duration-200 hover:scale-105 ${className}`}
+      className={`service-node font-semibold border-2 rounded-lg p-3 w-full text-center bg-white shadow-sm cursor-pointer transition-transform duration-200 hover:scale-[1.01] ${className}`}
     >
       {children}
     </div>
@@ -98,7 +98,7 @@ const Architecture = () => {
         maintainability. Hover over a service in the diagram below to learn more
         about its specific role and technology.
       </p>
-      <Card className="p-6 md:p-8">
+      <Card className="p-2 md:p-4 lg:p-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
           <div className="lg:col-span-2 bg-neutral-50 rounded-lg p-6 flex flex-col items-center justify-center space-y-4 border border-dashed border-slate-300">
             <ServiceNode id="frontend-node" className="border-neutral-300">

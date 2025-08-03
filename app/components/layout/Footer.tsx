@@ -1,4 +1,4 @@
-import { Github, Globe, Bot } from "lucide-react";
+import { Github, Globe } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -15,6 +15,7 @@ const Footer = () => {
                 alt="logo"
                 width={50}
                 height={50}
+                className="select-none pointer-events-none"
               />{" "}
               NutriGenius AI
             </h3>

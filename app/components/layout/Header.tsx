@@ -93,6 +93,7 @@ const Header = () => {
                 alt="logo"
                 width={50}
                 height={50}
+                className="select-none pointer-events-none"
               />
               NutriGenius AI
             </Link>

@@ -68,7 +68,7 @@ const teamMembers = [
     ],
     links: {
       github: "https://github.com/Sushrut2007",
-      linkedin: "www.linkedin.com/in/sushrut-deshmukh-7266622b6",
+      linkedin: "http://www.linkedin.com/in/sushrut-deshmukh-7266622b6",
       discord: "https://discord.com/users/832471792627089448",
     },
   },
@@ -111,7 +111,7 @@ const Team = () => {
               alt={member.name}
               width={200}
               height={200}
-              className="w-32 h-32 rounded-full"
+              className="w-32 h-32 rounded-full select-none pointer-events-none"
             />
             <h3 className="mt-6 text-2xl font-bold text-slate-900">
               {member.name}
@@ -135,7 +135,7 @@ const Team = () => {
                 <Image
                   src={GithubIcon.src}
                   alt="GitHub"
-                  className="w-6 h-6"
+                  className="w-6 h-6 select-none pointer-events-none"
                   width={24}
                   height={24}
                 />
@@ -148,7 +148,7 @@ const Team = () => {
                 <Image
                   src={LinkedinIcon.src}
                   alt="LinkedIn"
-                  className="w-6 h-6"
+                  className="w-6 h-6 select-none pointer-events-none"
                   width={24}
                   height={24}
                 />
@@ -161,7 +161,7 @@ const Team = () => {
                 <Image
                   src={DiscordIcon.src}
                   alt="Discord"
-                  className="w-6 h-6"
+                  className="w-6 h-6 select-none pointer-events-none"
                   width={24}
                   height={24}
                 />
@@ -175,7 +175,7 @@ const Team = () => {
                   <Image
                     src={PortfolioIcon.src}
                     alt="Portfolio"
-                    className="w-6 h-6"
+                    className="w-6 h-6 select-none pointer-events-none"
                     width={24}
                     height={24}
                   />
