@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NutriGenius - Recipe Generator Frontend
 
-## Getting Started
+Welcome to the frontend of NutriGenius, a smart recipe recommendation system built with Next.js and Tailwind CSS. This application provides a user-friendly interface for users to input their health data, dietary preferences, and desired ingredients to receive personalized meal recommendations from our custom-trained machine learning model.
 
-First, run the development server:
+![NutriGenius Screenshot](https://i.postimg.cc/X7xYX6b1/nutrigenius.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **User Authentication:** Secure sign-up and sign-in functionality powered by Clerk.
+- **Detailed Recipe Form:** A comprehensive form to input height, weight, desired ingredients, allergies, meal type, weight goal, and diet preferences.
+- **Dynamic Recommendations:** Fetches and displays a list of personalized recipes from the FastAPI backend.
+- **Interactive Recipe Cards:** Each recipe is displayed on a clean, modern card layout.
+- **View Full Procedure:** Users can click on any recipe card to view the full step-by-step cooking instructions in a dialog modal.
+- **External Recipe Links:** Provides a direct link to view the full, original recipe on its source website.
+- **Responsive Design:** Fully responsive interface that works seamlessly on desktop, tablet, and mobile devices.
+- **Blazing Fast API** FastAPI backend, serving recipes in under 100ms.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework:** [Next.js](https://nextjs.org/)
+- **Authentication:** [Clerk](https://clerk.com/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components:** [Shadcn/UI](https://ui.shadcn.com/)
+- **Form Management:** [React Hook Form](https://react-hook-form.com/) & [Zod](https://zod.dev/)
+- **Data Fetching:** [TanStack Query (React Query)](https://tanstack.com/query/latest)
+- **Backend:** [Python(FastAPI)](https://fastapi.tiangolo.com/)
+- **Machine Learning:** [Scikit-learn](https://scikit-learn.org/stable/) & [Pandas](https://pandas.pydata.org/)
 
-## Learn More
+## 🚀 Getting Started
 
-To learn more about Next.js, take a look at the following resources:
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Prerequisites
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Node.js (v18.x or later)
+- npm, yarn, or pnpm
+- A Clerk account for authentication keys.
 
-## Deploy on Vercel
+### Installation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1.  **Clone the repository:**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+    ```bash
+    git clone [https://github.com/Arsenic-01/nutrigenius-frontend.git](https://github.com/Arsenic-01/nutrigenius-frontend.git)
+    cd nutrigenius-frontend
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    # or
+    pnpm install
+    ```
+
+### Environment Variables
+
+To connect the frontend to your backend API and Clerk, you need to create an environment variable file.
+
+1.  Create a file named `.env.local` in the root of your project.
+2.  Add the following variables. You can get the Clerk keys from your Clerk dashboard.
+
+    ```
+    # Backend API URL
+    NEXT_PUBLIC_API_URL=[http://127.0.0.1:8000](http://127.0.0.1:8000)
+
+    # Clerk Authentication Keys
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+    CLERK_SECRET_KEY=your_clerk_secret_key
+    ```
+
+    _Note: If you have deployed your backend, replace the local API URL with your live Render URL (e.g., `https://url-of-your-backend.onrender.com`)._
+
+## 📜 Available Scripts
+
+In the project directory, you can run the following commands:
+
+- **`npm run dev`**
+  Runs the app in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser. The page will reload if you make edits.
+
+- **`npm run build`**
+  Builds the app for production to the `.next` folder. It correctly bundles React in production mode and optimizes the build for the best performance.
+
+- **`npm run start`**
+  Starts a production server. This should be run after building the application with `npm run build`.
+
+## 🚢 Deployment
+
+The easiest way to deploy this Next.js application is by using [Vercel](https://vercel.com/), the creators of Next.js.
+
+1.  **Push your code** to a GitHub repository.
+2.  **Import your project** on the Vercel dashboard.
+3.  **Configure Environment Variables:** In your Vercel project settings, go to the "Environment Variables" section and add your `NEXT_PUBLIC_API_URL`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, and `CLERK_SECRET_KEY`.
+4.  **Deploy:** Vercel will automatically build and deploy your application. Any subsequent pushes to your main branch will trigger automatic redeployments.
+
+---
+
+This project was created to demonstrate the integration of a machine learning model with a modern web frontend. Feel free to explore, modify, and enhance it!
