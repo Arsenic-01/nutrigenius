@@ -12,23 +12,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/Select";
-import type { Control } from "react-hook-form";
 
-interface FormSelectFieldProps {
-  control: Control<any>;
-  name: string;
+import type { Control, FieldValues, Path } from "react-hook-form";
+
+interface FormSelectFieldProps<TFieldValues extends FieldValues> {
+  control: Control<TFieldValues>;
+  name: Path<TFieldValues>;
   label: string;
   placeholder: string;
   options: string[];
 }
 
-export function FormSelectField({
+export function FormSelectField<TFieldValues extends FieldValues>({
   control,
   name,
   label,
   placeholder,
   options,
-}: FormSelectFieldProps) {
+}: FormSelectFieldProps<TFieldValues>) {
   return (
     <FormField
       control={control}
