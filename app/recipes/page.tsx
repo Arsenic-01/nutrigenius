@@ -1,12 +1,23 @@
 "use client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ListFilterPlus, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import Image from "next/image";
+import { fetchMoreRecipes } from "@/lib/apis";
+import {
+  PaginatedApiRecommendResponse,
+  Recipe,
+  RecipeRequestData,
+} from "@/types";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useMemo } from "react";
-import { Clock, Tag, Users, Zap, Filter, X } from "lucide-react";
+import { CuisineFilter } from "../components/filters/CuisineFilter";
+import { MealTypeFilter } from "../components/filters/MealTypeFilter";
+import { ServingsFilter } from "../components/filters/ServingsFilter";
+import { TimeFilter } from "../components/filters/TimeFilter";
+import ProcedureDialog from "../components/recipe/ProcedureDialog";
+import RecipeGrid from "../components/recipe/RecipeGrid";
 import { Button } from "../components/ui/Button";
-import Card from "../components/ui/Card";
 import {
   Dialog,
   DialogClose,
@@ -15,112 +26,22 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../components/ui/Dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../components/ui/Popover";
-import { Label } from "../components/ui/Label";
-import { Slider } from "../components/ui/Slider";
-import { apiUrl } from "../constant";
-import { toast } from "sonner";
-import { Checkbox } from "../components/ui/Checkbox";
-
-// Interfaces to match the data structures
-interface Recipe {
-  id: number;
-  RecipeName: string;
-  Cuisine?: string;
-  Course?: string;
-  Diet?: string;
-  URL?: string;
-  image: string;
-  PrepTimeInMins?: number;
-  CookTimeInMins?: number;
-  TotalTimeInMins?: number;
-  Servings?: number;
-}
-
-interface PaginatedApiResponse {
-  recipes: Recipe[];
-  page: number;
-  total_pages: number;
-  has_next_page: boolean;
-}
-
-interface RecipeRequestData {
-  height_cm: number;
-  weight_kg: number;
-  desired_ingredients: string;
-  meal_type: string;
-  weight_goal: string;
-  user_allergies?: string;
-  diet_preference?: string;
-  max_cooking_time?: number;
-  skill_level?: string;
-  pantry_ingredients?: string;
-}
-
-interface ProcedureResponse {
-  steps: string[];
-}
-
-const fetchProcedure = async (recipeId: number): Promise<ProcedureResponse> => {
-  const response = await fetch(`${apiUrl}/procedure/${recipeId}`);
-  if (!response.ok) throw new Error("Network response was not ok");
-  return response.json();
-};
-
-const fetchMoreRecipes = async (
-  values: RecipeRequestData & { page: number }
-): Promise<PaginatedApiResponse> => {
-  const response = await fetch(`${apiUrl}/recommend`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(values),
-  });
-  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-  return response.json();
-};
-
-function ProcedureDialog({ recipeId }: { recipeId: number }) {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["procedure", recipeId],
-    queryFn: () => fetchProcedure(recipeId),
-    enabled: !!recipeId,
-  });
-
-  if (isLoading) return <div className="text-center">Loading steps...</div>;
-  if (isError)
-    return <p className="text-red-500">Could not fetch recipe steps.</p>;
-  return (
-    <ol className="list-decimal space-y-3 pl-5 text-slate-600">
-      {data?.steps.map((step, i) => (
-        <li key={i}>{step}</li>
-      ))}
-    </ol>
-  );
-}
 
 export default function RecipesPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // State for all recipes and pagination
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-
-  // --- NEW: State for client-side filters ---
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>([]);
-  const [maxTime, setMaxTime] = useState<number>(300); // Default max time
-  const [maxServings, setMaxServings] = useState<number>(12); // Default max servings
+  const [maxTime, setMaxTime] = useState(300);
+  const [maxServings, setMaxServings] = useState(12);
 
-  const initialData = queryClient.getQueryData<PaginatedApiResponse>([
+  const initialData = queryClient.getQueryData<PaginatedApiRecommendResponse>([
     "recommendationResponse",
   ]);
   const lastRequest = queryClient.getQueryData<RecipeRequestData>([
@@ -135,86 +56,99 @@ export default function RecipesPage() {
     }
   }, [initialData]);
 
-  // --- NEW: Memoized filtering logic ---
   const filteredRecipes = useMemo(() => {
-    return allRecipes.filter((recipe) => {
+    return allRecipes.filter((r) => {
       const cuisineMatch =
         selectedCuisines.length === 0 ||
-        (recipe.Cuisine && selectedCuisines.includes(recipe.Cuisine));
+        (r.Cuisine && selectedCuisines.includes(r.Cuisine));
       const mealTypeMatch =
         selectedMealTypes.length === 0 ||
-        (recipe.Course && selectedMealTypes.includes(recipe.Course));
-      const timeMatch =
-        !recipe.TotalTimeInMins || recipe.TotalTimeInMins <= maxTime;
-      const servingsMatch = !recipe.Servings || recipe.Servings <= maxServings;
+        (r.Course && selectedMealTypes.includes(r.Course));
+      const timeMatch = !r.TotalTimeInMins || r.TotalTimeInMins <= maxTime;
+      const servingsMatch = !r.Servings || r.Servings <= maxServings;
       return cuisineMatch && mealTypeMatch && timeMatch && servingsMatch;
     });
   }, [allRecipes, selectedCuisines, selectedMealTypes, maxTime, maxServings]);
 
-  // --- NEW: Extract unique filter options from the results ---
   const uniqueCuisines = useMemo(
     () => [
       ...new Set(
-        allRecipes.map((r) => r.Cuisine).filter((c): c is string => !!c)
+        allRecipes.map((r) => r.Cuisine).filter((x): x is string => Boolean(x))
       ),
     ],
     [allRecipes]
   );
-
   const uniqueMealTypes = useMemo(
     () => [
       ...new Set(
-        allRecipes.map((r) => r.Course).filter((c): c is string => Boolean(c))
+        allRecipes.map((r) => r.Course).filter((x): x is string => Boolean(x))
       ),
     ],
     [allRecipes]
   );
 
-  const { mutate: loadMore, isPending: isLoadingMore } = useMutation({
+  const dataMaxTime = useMemo(
+    () =>
+      allRecipes.length > 0
+        ? Math.max(...allRecipes.map((r) => r.TotalTimeInMins || 0))
+        : 300, // Fallback if no recipes
+    [allRecipes]
+  );
+  const dataMaxServings = useMemo(
+    () =>
+      allRecipes.length > 0
+        ? Math.max(...allRecipes.map((r) => r.Servings || 0))
+        : 12, // Fallback if no recipes
+    [allRecipes]
+  );
+  useEffect(() => {
+    setMaxTime(dataMaxTime);
+    setMaxServings(dataMaxServings);
+  }, [dataMaxTime, dataMaxServings]);
+
+  const { mutate: loadMore, isPending } = useMutation({
     mutationFn: fetchMoreRecipes,
     onSuccess: (data) => {
       setAllRecipes((prev) => [...prev, ...data.recipes]);
       setCurrentPage(data.page);
       setHasNextPage(data.has_next_page);
     },
-    onError: () => {
-      toast.error("Could not load more recipes. Please try again.");
-    },
+    onError: () => toast.error("Could not load more recipes."),
   });
 
   const handleLoadMore = () => {
-    if (lastRequest && hasNextPage) {
+    if (lastRequest && hasNextPage)
       loadMore({ ...lastRequest, page: currentPage + 1 });
-    }
   };
 
   const clearFilters = () => {
     setSelectedCuisines([]);
     setSelectedMealTypes([]);
-    setMaxTime(300);
-    setMaxServings(12);
+    setMaxTime(dataMaxTime);
+    setMaxServings(dataMaxServings);
   };
 
   const activeFilterCount =
     selectedCuisines.length +
     selectedMealTypes.length +
-    (maxTime < 300 ? 1 : 0) +
-    (maxServings < 12 ? 1 : 0);
+    (maxTime < dataMaxTime ? 1 : 0) +
+    (maxServings < dataMaxServings ? 1 : 0);
 
   if (!initialData || !lastRequest) {
     return (
-      <div id="recipes" className="min-h-screen pt-12 mt-20 mb-20">
-        <h1 className="text-3xl md:text-4xl font-bold text-center mb-4 text-slate-800">
-          🍲 Recommended Recipes
+      <div className="min-h-screen flex flex-col items-center justify-center text-center px-4">
+        <div className="text-8xl mb-4">🦇🤵</div>
+        <h1 className="text-3xl font-bold text-slate-800">
+          Even Batman Needs to Eat.
         </h1>
-        <p className="text-center text-slate-500 max-w-2xl mx-auto mb-12">
-          No recipes found. Please go back and generate some!
+        <p className="text-slate-500 mt-2 max-w-md">
+          Alfred can&apos;t prepare a meal if the recipe book is empty. We
+          wouldn&apos;t want Master Wayne to fight crime on an empty stomach,
+          would we?
         </p>
-        <div className="text-center">
-          <Button onClick={() => router.push("/meal-finder")}>
-            Go Back To Generator
-          </Button>
-        </div>
+        <Button className="mt-8" onClick={() => router.push("/meal-finder")}>
+          Summon the Meal Plan
+        </Button>
       </div>
     );
   }
@@ -224,257 +158,126 @@ export default function RecipesPage() {
       open={!!selectedRecipe}
       onOpenChange={(isOpen) => !isOpen && setSelectedRecipe(null)}
     >
-      <div id="recipes" className="min-h-screen py-12 mb-20 mt-20">
+      <div className="py-20 my-8 md:my-12">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold text-center md:text-start mb-4 ">
-            Recommended Recipes
-          </h1>
-          <p className="text-slate-500 text-center md:text-start max-w-2xl mb-8">
-            Explore a curated collection of delicious recipes. Click any card to
-            view the steps.
+          <h1 className="text-3xl font-bold mb-4">Recommended Recipes</h1>
+          <p className="text-slate-500 mb-8">
+            Explore a curated collection of recipes. Click any card to view
+            steps.
           </p>
-        </div>
-        {/* --- NEW: Filter Bar --- */}
-        <div className="max-w-5xl mx-auto mb-8 p-4 bg-slate-50 rounded-lg border flex flex-col md:flex-row gap-4">
-          <div className="items-center gap-2 font-semibold text-slate-700 hidden md:flex">
-            <Filter className="w-5 h-5" />
-            <span>Filters:</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Cuisine Filter */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline">
-                  Cuisine ({selectedCuisines.length || "All"})
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 max-h-72 overflow-y-auto">
-                <div className="space-y-2">
-                  <h4 className="font-medium leading-none">Cuisine</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Select preferred cuisines.
-                  </p>
-                  <div className="max-h-48  space-y-2 py-2">
-                    {uniqueCuisines.map((cuisine) => (
-                      <div
-                        key={cuisine}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={cuisine}
-                          checked={selectedCuisines.includes(cuisine)}
-                          onCheckedChange={(checked) => {
-                            setSelectedCuisines((prev) =>
-                              checked
-                                ? [...prev, cuisine]
-                                : prev.filter((c) => c !== cuisine)
-                            );
-                          }}
-                        />
-                        <Label htmlFor={cuisine}>{cuisine}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
 
-            {/* Meal Type Filter */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline">
-                  Meal Type ({selectedMealTypes.length || "All"})
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 max-h-72 overflow-y-auto">
-                <div className="space-y-2">
-                  <h4 className="font-medium leading-none">Meal Type</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Select course types.
-                  </p>
-                  <div className="max-h-48  space-y-2 pt-2">
-                    {uniqueMealTypes.map((mealType) => (
-                      <div
-                        key={mealType}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={mealType}
-                          checked={selectedMealTypes.includes(mealType)}
-                          onCheckedChange={(checked) => {
-                            setSelectedMealTypes((prev) =>
-                              checked
-                                ? [...prev, mealType]
-                                : prev.filter((c) => c !== mealType)
-                            );
-                          }}
-                        />
-                        <Label htmlFor={mealType}>{mealType}</Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </PopoverContent>
-            </Popover>
+          <div className="mb-8 p-2 md:p-4 bg-slate-50 border rounded-lg flex flex-col md:flex-row gap-4">
+            <div className="hidden md:flex items-center gap-2 text-slate-700 font-semibold">
+              <ListFilterPlus className="w-5 h-5" /> <span>Filters</span>
+            </div>
 
-            {/* Time Filter */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline">Time (Max {maxTime} min)</Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64">
-                <div className="space-y-2">
-                  <h4 className="font-medium leading-none">Max Cooking Time</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Set a maximum total time.
-                  </p>
-                  <Slider
-                    defaultValue={[maxTime]}
-                    max={300}
-                    step={15}
-                    onValueChange={(value) => setMaxTime(value[0])}
-                    className="pt-4"
-                  />
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {/* Servings Filter */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline">Servings (Max {maxServings})</Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 max-h-72 overflow-y-auto">
-                <div className="space-y-2">
-                  <h4 className="font-medium leading-none">Max Servings</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Set maximum servings.
-                  </p>
-                  <Slider
-                    defaultValue={[maxServings]}
-                    max={12}
-                    step={1}
-                    onValueChange={(value) => setMaxServings(value[0])}
-                    className="pt-4"
-                  />
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {activeFilterCount > 0 && (
-              <Button
-                variant="ghost"
-                onClick={clearFilters}
-                className="ml-auto text-sm text-slate-600 hover:bg-slate-200"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Clear All
-              </Button>
-            )}
-          </div>
-        </div>
-        {/* Recipe Grid */}
-        {filteredRecipes.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {filteredRecipes.map((recipe) => (
-              <DialogTrigger asChild key={`${recipe.id}-${recipe.RecipeName}`}>
-                <Card
-                  onClick={() => setSelectedRecipe(recipe)}
-                  className="flex flex-col overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer"
+            <div className="flex flex-col md:flex-row items-center gap-2">
+              <div className="flex gap-2 items-center justify-center w-full">
+                <CuisineFilter
+                  cuisines={uniqueCuisines}
+                  selected={selectedCuisines}
+                  onChange={setSelectedCuisines}
+                />
+                <MealTypeFilter
+                  mealTypes={uniqueMealTypes}
+                  selected={selectedMealTypes}
+                  onChange={setSelectedMealTypes}
+                />
+              </div>
+              <div className="flex gap-2 items-center justify-center w-full">
+                <TimeFilter
+                  max={dataMaxTime}
+                  onChange={setMaxTime}
+                  value={maxTime}
+                />
+                <ServingsFilter
+                  max={dataMaxServings}
+                  value={maxServings}
+                  onChange={setMaxServings}
+                />
+              </div>
+              {activeFilterCount > 0 && (
+                <Button
+                  variant="outline"
+                  className="ml-auto"
+                  onClick={clearFilters}
                 >
-                  <Image
-                    src={recipe.image}
-                    alt={recipe.RecipeName}
-                    className="w-full h-48 object-cover select-none pointer-events-none"
-                    width={400}
-                    height={200}
-                  />
-                  <div className="p-6 flex flex-col flex-grow">
-                    <h2 className="text-lg font-bold text-slate-800 mb-3">
-                      {recipe.RecipeName}
-                    </h2>
-                    <div className="space-y-3 mt-auto pt-4 border-t border-slate-200">
-                      {recipe.Cuisine && (
-                        <div className="flex items-center text-sm text-slate-600">
-                          <Tag className="w-4 h-4 mr-2 text-sky-600" />
-                          <span>{recipe.Cuisine}</span>
-                        </div>
-                      )}
-                      {recipe.Diet && (
-                        <div className="flex items-center text-sm text-slate-600">
-                          <Zap className="w-4 h-4 mr-2 text-amber-600" />
-                          <span>{recipe.Diet}</span>
-                        </div>
-                      )}
-                      {recipe.TotalTimeInMins && (
-                        <div className="flex items-center text-sm text-slate-600">
-                          <Clock className="w-4 h-4 mr-2 text-slate-500" />
-                          <span>{recipe.TotalTimeInMins} minutes</span>
-                        </div>
-                      )}
-                      {recipe.Servings && (
-                        <div className="flex items-center text-sm text-slate-600">
-                          <Users className="w-4 h-4 mr-2 text-slate-500" />
-                          <span>{recipe.Servings} people</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              </DialogTrigger>
-            ))}
+                  <X className="w-4 h-4" /> Clear All
+                </Button>
+              )}
+            </div>
           </div>
-        ) : (
-          <div className="text-center text-slate-500 max-w-2xl mx-auto">
-            <p>
-              No recipes match your current filters. Try clearing them to see
-              all results.
-            </p>
-          </div>
-        )}
-
-        {hasNextPage && filteredRecipes.length > 0 && (
-          <div className="text-center mt-12">
-            <Button onClick={handleLoadMore} disabled={isLoadingMore}>
-              {isLoadingMore ? "Loading..." : "Load More Recipes"}
-            </Button>
-          </div>
-        )}
-      </div>
-
-      {/* Dialog Content (No changes) */}
-      <DialogContent className="!max-w-3xl w-full">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-bold">
-            {selectedRecipe?.RecipeName}
-          </DialogTitle>
-          <DialogDescription>
-            Follow these steps to prepare your delicious meal.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="my-6 max-h-[60vh] overflow-y-auto pr-4">
-          {selectedRecipe && <ProcedureDialog recipeId={selectedRecipe.id} />}
-        </div>
-        <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
-          {selectedRecipe?.URL && (
-            <a
-              href={selectedRecipe.URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto mr-2"
-            >
-              <Button variant="secondary" className="w-full">
-                View Full Recipe
+          {filteredRecipes.length > 0 ? (
+            <RecipeGrid
+              recipes={filteredRecipes}
+              onSelect={setSelectedRecipe}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-4 text-center text-slate-500 md:p-6">
+              <svg
+                height="868"
+                width="2500"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 726 252.17"
+                className="size-28"
+              >
+                <path d="M483.92 0S481.38 24.71 466 40.11c-11.74 11.74-24.09 12.66-40.26 15.07-9.42 1.41-29.7 3.77-34.81-.79-2.37-2.11-3-21-3.22-27.62-.21-6.92-1.36-16.52-2.82-18-.75 3.06-2.49 11.53-3.09 13.61S378.49 34.3 378 36a85.13 85.13 0 0 0-30.09 0c-.46-1.67-3.17-11.48-3.77-13.56s-2.34-10.55-3.09-13.61c-1.45 1.45-2.61 11.05-2.82 18-.21 6.67-.84 25.51-3.22 27.62-5.11 4.56-25.38 2.2-34.8.79-16.16-2.47-28.51-3.39-40.21-15.13C244.57 24.71 242 0 242 0H0s69.52 22.74 97.52 68.59c16.56 27.11 14.14 58.49 9.92 74.73C170 140 221.46 140 273 158.57c69.23 24.93 83.2 76.19 90 93.6 6.77-17.41 20.75-68.67 90-93.6 51.54-18.56 103-18.59 165.56-15.25-4.21-16.24-6.63-47.62 9.93-74.73C656.43 22.74 726 0 726 0z" />
+              </svg>
+              <h2 className="text-lg font-semibold text-black">
+                No recipes found...
+              </h2>
+              <p className="text-sm max-w-sm">
+                Even Batman couldn&apos;t track that one down. Maybe try
+                loosening your filters, hero.
+              </p>
+              <Button variant={"outline"} onClick={clearFilters}>
+                Clear Filters
               </Button>
-            </a>
+            </div>
           )}
-          <DialogClose asChild>
-            <Button variant="outline" className="w-full sm:w-auto">
-              Close
-            </Button>
-          </DialogClose>
-        </DialogFooter>
-      </DialogContent>
+
+          {hasNextPage && filteredRecipes.length > 0 && (
+            <div className="text-center mt-12">
+              <Button onClick={handleLoadMore} disabled={isPending}>
+                {isPending ? "Loading..." : "Load More Recipes"}
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <DialogContent className="!max-w-3xl w-full">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">
+              {selectedRecipe?.RecipeName}
+            </DialogTitle>
+            <DialogDescription>
+              Follow these steps to prepare your meal.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="my-6 max-h-[60vh] overflow-y-auto pr-4">
+            {selectedRecipe && <ProcedureDialog recipeId={selectedRecipe.id} />}
+          </div>
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            {selectedRecipe?.URL && (
+              <a
+                href={selectedRecipe.URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto mr-2"
+              >
+                <Button variant="secondary" className="w-full">
+                  View Full Recipe
+                </Button>
+              </a>
+            )}
+            <DialogClose asChild>
+              <Button variant="outline" className="w-full sm:w-auto">
+                Close
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </div>
     </Dialog>
   );
 }
