@@ -1,9 +1,7 @@
-// export const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+export const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 export const mealTypeOptions = ["Breakfast", "Dinner", "Snack", "Dessert"];
 export const weightGoalOptions = ["Lose", "Maintain", "Gain"];
 export const skillLevelOptions = ["Beginner", "Intermediate", "Advanced"];
-export const apiUrl =
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 export const dietOptions = [
   "Vegetarian",
