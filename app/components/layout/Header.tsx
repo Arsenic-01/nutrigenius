@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useMemo, memo } from "react";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { memo, useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/Button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/Popover";
-import Image from "next/image";
 
 // --- Data Definitions (Cleaned Up) ---
 const navItems = [
@@ -101,6 +101,14 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-6">
+            <SignedIn>
+              <Link
+                href="/dashboard"
+                className="text-base text-teal-700 font-medium hover:bg-teal-50"
+              >
+                Dashboard
+              </Link>
+            </SignedIn>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -153,7 +161,7 @@ const Header = () => {
           </nav>
 
           {/* --- MOBILE SECTION (UNCHANGED) --- */}
-          <div className="lg:hidden flex items-center gap-4">
+          <div className="lg:hidden flex items-center gap-1">
             <SignedOut>
               <SignInButton mode="modal" forceRedirectUrl="/meal-finder">
                 <Button className="bg-teal-600 hover:bg-teal-700">
@@ -226,6 +234,22 @@ const Header = () => {
                 {item.label}
               </Link>
             ))}
+            <SignedIn>
+              <Link
+                href="/meal-finder"
+                onClick={() => setIsOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-teal-600 hover:bg-teal-50"
+              >
+                Meal Finder
+              </Link>
+              <Link
+                href="/meal-finder"
+                onClick={() => setIsOpen(false)}
+                className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-teal-600 hover:bg-teal-50"
+              >
+                Meal Finder
+              </Link>
+            </SignedIn>
           </div>
         </div>
       )}

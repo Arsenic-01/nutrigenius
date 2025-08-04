@@ -3,6 +3,7 @@ import {
   RecipeRequestData,
   ProcedureResponse,
   PaginatedApiRecommendResponse,
+  Recipe,
 } from "../types";
 import { RecipeFormValues } from "./schema";
 
@@ -46,3 +47,32 @@ export const recommendRecipes = async (
 
   return response.json();
 };
+
+export async function saveRecipe(userId: string, recipeId: number) {
+  const res = await fetch(`${apiUrl}/save-recipe`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: userId, recipe_id: recipeId }),
+  });
+
+  if (!res.ok) throw new Error("Failed to save recipe");
+  return await res.json();
+}
+
+export async function getSavedRecipes(userId: string): Promise<Recipe[]> {
+  const res = await fetch(`${apiUrl}/saved-recipes/${userId}`);
+  console.log(res);
+  if (!res.ok) throw new Error("Failed to fetch saved recipes");
+  return await res.json();
+}
+
+export async function unsaveRecipe(userId: string, recipeId: number) {
+  const res = await fetch(`${apiUrl}/unsave-recipe`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: userId, recipe_id: recipeId }),
+  });
+
+  if (!res.ok) throw new Error("Failed to unsave recipe");
+  return await res.json();
+}

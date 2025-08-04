@@ -1,16 +1,23 @@
 "use client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ListFilterPlus, X } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { ListFilterPlus, X, Heart, HeartCrack } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
-import { fetchMoreRecipes } from "@/lib/apis";
+import {
+  fetchMoreRecipes,
+  saveRecipe,
+  unsaveRecipe,
+  getSavedRecipes,
+} from "@/lib/apis";
+
 import {
   PaginatedApiRecommendResponse,
   Recipe,
   RecipeRequestData,
 } from "@/types";
-import { useRouter } from "next/navigation";
 import { CuisineFilter } from "../components/filters/CuisineFilter";
 import { MealTypeFilter } from "../components/filters/MealTypeFilter";
 import { ServingsFilter } from "../components/filters/ServingsFilter";
@@ -31,7 +38,9 @@ import {
 export default function RecipesPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { user, isSignedIn } = useUser();
 
+  // --- State Management ---
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
@@ -40,7 +49,116 @@ export default function RecipesPage() {
   const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>([]);
   const [maxTime, setMaxTime] = useState(300);
   const [maxServings, setMaxServings] = useState(12);
+  const [savedRecipeIds, setSavedRecipeIds] = useState<Set<number>>(new Set());
 
+  // --- Data Fetching ---
+  const { data: savedRecipesData, isSuccess: isSavedRecipesSuccess } = useQuery<
+    Recipe[]
+  >({
+    queryKey: ["savedRecipes", user?.id],
+    queryFn: () => getSavedRecipes(user!.id),
+    enabled: !!isSignedIn && !!user,
+  });
+
+  useEffect(() => {
+    if (isSavedRecipesSuccess && savedRecipesData) {
+      setSavedRecipeIds(new Set(savedRecipesData.map((r) => r.id)));
+    }
+  }, [isSavedRecipesSuccess, savedRecipesData]);
+
+  // --- MODIFIED: useMutation hook for robust save/unsave logic ---
+  const { mutate: toggleSave } = useMutation({
+    mutationFn: async ({
+      recipe,
+      isCurrentlySaved,
+    }: {
+      recipe: Recipe;
+      isCurrentlySaved: boolean;
+    }) => {
+      if (!user) throw new Error("User not found");
+      if (isCurrentlySaved) {
+        return unsaveRecipe(user.id, recipe.id);
+      } else {
+        return saveRecipe(user.id, recipe.id);
+      }
+    },
+    // This function runs before the API call
+    onMutate: async ({
+      recipe,
+      isCurrentlySaved,
+    }: {
+      recipe: Recipe;
+      isCurrentlySaved: boolean;
+    }) => {
+      // 1. Cancel any outgoing refetches to prevent overwriting our optimistic update
+      await queryClient.cancelQueries({ queryKey: ["savedRecipes", user?.id] });
+
+      // 2. Snapshot the previous value from the cache
+      const previousSavedRecipes =
+        queryClient.getQueryData<Recipe[]>(["savedRecipes", user?.id]) || [];
+
+      // 3. Optimistically update the cache with the new value
+      queryClient.setQueryData<Recipe[]>(
+        ["savedRecipes", user?.id],
+        (oldData = []) => {
+          if (isCurrentlySaved) {
+            // If unsaving, filter out the recipe
+            return oldData.filter((r) => r.id !== recipe.id);
+          } else {
+            // If saving, add the new recipe
+            return [...oldData, recipe];
+          }
+        }
+      );
+
+      // 4. Return a context object with the snapshotted value for rollback
+      return { previousSavedRecipes };
+    },
+    // 5. If the mutation fails, roll back to the previous state
+    onError: (err, variables, context) => {
+      if (context?.previousSavedRecipes) {
+        queryClient.setQueryData(
+          ["savedRecipes", user?.id],
+          context.previousSavedRecipes
+        );
+      }
+      toast.error(
+        `Failed to ${variables.isCurrentlySaved ? "unsave" : "save"}.`
+      );
+    },
+    // 6. Always refetch after error or success to ensure final consistency
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["savedRecipes", user?.id] });
+    },
+    onSuccess: (res) => {
+      toast.success(res.message);
+    },
+  });
+
+  const handleSaveToggle = () => {
+    if (!selectedRecipe) return;
+    const isCurrentlySaved = savedRecipeIds.has(selectedRecipe.id);
+
+    // Update local state for the button's appearance immediately
+    setSavedRecipeIds((prev) => {
+      const newSet = new Set(prev);
+      if (isCurrentlySaved) {
+        newSet.delete(selectedRecipe.id);
+      } else {
+        newSet.add(selectedRecipe.id);
+      }
+      return newSet;
+    });
+
+    // Trigger the mutation with all necessary variables
+    toggleSave({ recipe: selectedRecipe, isCurrentlySaved });
+  };
+
+  const isSelectedRecipeSaved = selectedRecipe
+    ? savedRecipeIds.has(selectedRecipe.id)
+    : false;
+
+  // --- Unchanged Logic Below ---
   const initialData = queryClient.getQueryData<PaginatedApiRecommendResponse>([
     "recommendationResponse",
   ]);
@@ -91,14 +209,14 @@ export default function RecipesPage() {
     () =>
       allRecipes.length > 0
         ? Math.max(...allRecipes.map((r) => r.TotalTimeInMins || 0))
-        : 300, // Fallback if no recipes
+        : 300,
     [allRecipes]
   );
   const dataMaxServings = useMemo(
     () =>
       allRecipes.length > 0
         ? Math.max(...allRecipes.map((r) => r.Servings || 0))
-        : 12, // Fallback if no recipes
+        : 12,
     [allRecipes]
   );
   useEffect(() => {
@@ -160,7 +278,7 @@ export default function RecipesPage() {
     >
       <div className="py-20 my-8 md:my-12">
         <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold mb-4">Recommended Recipes</h1>
+          <h1 className="text-3xl font-bold mb-1">Recommended Recipes</h1>
           <p className="text-slate-500 mb-8">
             Explore a curated collection of recipes. Click any card to view
             steps.
@@ -254,10 +372,25 @@ export default function RecipesPage() {
               Follow these steps to prepare your meal.
             </DialogDescription>
           </DialogHeader>
-          <div className="my-6 max-h-[60vh] overflow-y-auto pr-4">
+          <div className="my-6 max-h-[60vh] overflow-y-auto scrollbar-hidden pr-4">
             {selectedRecipe && <ProcedureDialog recipeId={selectedRecipe.id} />}
           </div>
           <DialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <Button
+              className="w-full sm:w-auto"
+              onClick={handleSaveToggle}
+              variant={isSelectedRecipeSaved ? "secondary" : "default"}
+            >
+              {isSelectedRecipeSaved ? (
+                <>
+                  <HeartCrack className="w-4 h-4 mr-2" /> Unsave Recipe
+                </>
+              ) : (
+                <>
+                  <Heart className="w-4 h-4 mr-2" /> Save Recipe
+                </>
+              )}
+            </Button>
             {selectedRecipe?.URL && (
               <a
                 href={selectedRecipe.URL}
@@ -265,7 +398,7 @@ export default function RecipesPage() {
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto mr-2"
               >
-                <Button variant="secondary" className="w-full">
+                <Button variant="outline" className="w-full">
                   View Full Recipe
                 </Button>
               </a>
