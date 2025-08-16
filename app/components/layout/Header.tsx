@@ -243,11 +243,11 @@ const Header = () => {
                 Meal Finder
               </Link>
               <Link
-                href="/meal-finder"
+                href="/dashboard"
                 onClick={() => setIsOpen(false)}
                 className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-teal-600 hover:bg-teal-50"
               >
-                Meal Finder
+                Dashboard
               </Link>
             </SignedIn>
           </div>
