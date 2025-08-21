@@ -39,7 +39,7 @@ const teamMembers = [
       linkedin: "http://www.linkedin.com/in/TanayHingane",
       discord: "https://discord.com/users/1198554997386915880",
       portfolio:
-        "https://www.snapchat.com/add/tanay.h03?share_id=L1uzTRlecFo&locale=en-IN",
+        "https://www.tanayhingane03.vercel.app/",
     },
   },
   {
