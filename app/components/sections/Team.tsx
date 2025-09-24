@@ -21,7 +21,7 @@ const teamMembers = [
       github: "https://github.com/Arsenic-01/",
       linkedin: "https://www.linkedin.com/in/vedant-bhor-39287828b/",
       discord: "https://discord.com/users/862682607162359819",
-      portfolio: "https://vedantbhor.vercel.app/",
+      portfolio: "https://vedantbhor.dev/",
     },
   },
   {
@@ -38,8 +38,7 @@ const teamMembers = [
       github: "https://github.com/TanayHingane",
       linkedin: "http://www.linkedin.com/in/TanayHingane",
       discord: "https://discord.com/users/1198554997386915880",
-      portfolio:
-        "https://tanayhingane03.vercel.app/",
+      portfolio: "https://tanayhingane03.vercel.app/",
     },
   },
   {
